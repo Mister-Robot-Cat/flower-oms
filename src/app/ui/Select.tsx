@@ -6,7 +6,7 @@ export default function Select({ className = "", ...props }: React.SelectHTMLAtt
   return (
     <select
       {...props}
-      className={`w-full rounded-lg bg-white border border-space-border px-3 py-2.5 text-sm text-space-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary disabled:bg-space-surface-light disabled:cursor-not-allowed disabled:text-space-text-muted transition-all duration-200 leading-5 shadow-sm ${className}`}
+      className={`w-full bg-surface border text-text-primary focus:outline-none disabled:bg-surface-hover disabled:cursor-not-allowed disabled:text-text-muted transition-all-smooth leading-5 shadow-sm rounded-xl px-4 py-3 text-sm border-border focus:ring-brand-500/20 focus:border-brand-500 hover:border-border-strong ${className}`}
     />
   );
 }

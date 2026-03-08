@@ -1,28 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import TopNav from "./ui/TopNav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const clother = Inter({
+  variable: "--font-clother",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Gül Mağazası Sifariş Sistemi",
+  title: "COSMIC - Premium Sifariş Sistemi",
   description: "Daxili sifariş və anbar idarəetmə sistemi",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({
@@ -33,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="az">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${clother.variable} font-clother antialiased`}
       >
         <Providers>
           <TopNav />

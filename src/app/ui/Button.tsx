@@ -22,7 +22,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    "inline-flex items-center justify-center font-medium transition-all-smooth focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation relative overflow-hidden group";
+    "inline-flex items-center justify-center font-normal transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden";
   
   const sizeStyles: Record<Size, string> = {
     sm: "text-xs px-3 py-1.5 leading-4 rounded-lg gap-2",
@@ -32,17 +32,17 @@ export default function Button({
 
   const variantStyles: Record<Variant, string> = {
     primary:
-      "bg-gradient-brand text-white hover:shadow-brand focus:ring-brand-500/20 disabled:opacity-50 shadow-sm hover-lift",
+      "bg-gradient-to-r from-[#6E1075] to-[#631974] text-white hover:from-[#631974] hover:to-[#501257] focus:ring-4 focus:ring-[#C743DA]/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30 backdrop-blur-sm",
     secondary:
-      "bg-surface text-text-primary border border-border hover:bg-surface-hover hover:border-border-strong focus:ring-brand-500/20 disabled:opacity-50 shadow-sm hover-lift",
+      "bg-white/90 backdrop-blur-sm text-[#501257] border border-[#C743DA]/40 hover:bg-white hover:border-[#6E1075]/50 focus:ring-4 focus:ring-[#C743DA]/20 disabled:opacity-50 shadow-lg hover:shadow-xl transition-all duration-300",
     destructive:
-      "bg-error text-white hover:bg-error/90 focus:ring-error/20 disabled:opacity-50 shadow-sm hover-lift",
+      "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-4 focus:ring-red-400/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30",
     ghost:
-      "text-text-secondary hover:bg-surface-hover hover:text-text-primary focus:ring-brand-500/20 disabled:opacity-50 rounded-xl",
+      "text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] focus:ring-4 focus:ring-[#C743DA]/20 disabled:opacity-50 transition-all duration-300 font-medium",
     success:
-      "bg-success text-white hover:bg-success/90 focus:ring-success/20 disabled:opacity-50 shadow-sm hover-lift",
+      "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 focus:ring-4 focus:ring-green-400/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30",
     accent:
-      "bg-gradient-brand text-white hover:shadow-brand focus:ring-brand-500/20 disabled:opacity-50 shadow-sm hover-lift",
+      "bg-gradient-to-r from-[#C743DA] to-[#6E1075] text-white hover:from-[#6E1075] hover:to-[#631974] focus:ring-4 focus:ring-[#C743DA]/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30 backdrop-blur-sm",
   };
 
   return (

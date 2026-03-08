@@ -10,34 +10,34 @@ export default async function TopNav() {
   const name = (session?.user as any)?.displayName || (session?.user as any)?.name || "";
 
   return (
-    <header className="sticky top-0 z-30 glass border-b border-border shadow-sm">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#C743DA]/20 shadow-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-        <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-3 text-sm font-semibold text-text-primary hover:opacity-80 transition-opacity group">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-brand shadow-brand text-xl group-hover:scale-105 transition-transform">
+        <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-3 text-sm font-medium text-[#501257] hover:opacity-90 transition-all duration-300 group">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E1075] to-[#631974] shadow-xl text-xl group-hover:scale-105 transition-transform duration-300 ring-2 ring-[#C743DA]/30">
             🌸
           </div>
-          <span className="font-display text-xl font-bold bg-gradient-brand bg-clip-text text-transparent">FlowerOMS</span>
+          <span className="font-display text-2xl font-medium bg-gradient-to-r from-[#6E1075] via-[#C743DA] to-[#631974] bg-clip-text text-transparent">COSMIC</span>
         </Link>
         
-        <nav className="hidden gap-1 md:flex text-sm font-medium">
+        <nav className="hidden gap-2 md:flex text-sm font-medium">
           {(role === "ADMIN" || role === "CALL_CENTER") && (
-            <Link href="/orders" className="nav-link">Sifarişlər</Link>
+            <Link href="/orders" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">Sifarişlər</Link>
           )}
           {role === "CALL_CENTER" && (
-            <Link href="/callcenter" className="nav-link">Zəng mərkəzi</Link>
+            <Link href="/callcenter" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">Zəng mərkəzi</Link>
           )}
           {role === "FLORIST" && (
-            <Link href="/florist" className="nav-link">Florist</Link>
+            <Link href="/florist" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">Florist</Link>
           )}
           {(role === "ADMIN" || role === "CALL_CENTER") && (
-            <Link href="/customers" className="nav-link">Müştərilər</Link>
+            <Link href="/customers" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">Müştərilər</Link>
           )}
           {role === "ADMIN" && (
             <>
-              <Link href="/admin/users" className="nav-link">İstifadəçilər</Link>
-              <Link href="/admin/flowers" className="nav-link">Anbar</Link>
-              <Link href="/admin/reports/performance" className="nav-link">Performans</Link>
-              <Link href="/admin/reports/sales" className="nav-link">Satışlar</Link>
+              <Link href="/admin/users" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">İstifadəçilər</Link>
+              <Link href="/admin/flowers" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">Anbar</Link>
+              <Link href="/admin/reports/performance" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">Performans</Link>
+              <Link href="/admin/reports/sales" className="px-4 py-2.5 rounded-xl text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] transition-all duration-300 border border-transparent hover:border-[#C743DA]/30">Satışlar</Link>
             </>
           )}
         </nav>
@@ -46,11 +46,11 @@ export default async function TopNav() {
           {session?.user ? (
             <>
               <div className="hidden sm:flex items-center gap-3">
-                <Link href="/profile" className="text-text-secondary hover:text-text-primary transition-colors font-medium">
+                <Link href="/profile" className="text-[#631974] hover:text-[#501257] transition-colors font-medium">
                   {name}
                 </Link>
                 {role && (
-                  <span className="inline-flex rounded-lg border border-brand-500/20 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600">
+                  <span className="inline-flex rounded-xl border border-[#C743DA]/30 bg-gradient-to-r from-[#F3F1F2] to-[#E8D5E8] px-4 py-1.5 text-xs font-semibold text-[#501257] shadow-lg">
                     {role}
                   </span>
                 )}
@@ -59,7 +59,7 @@ export default async function TopNav() {
               <MobileMenu role={role} isAuthenticated={!!session?.user} />
             </>
           ) : (
-            <Link href="/login" className="btn-primary">Daxil ol</Link>
+            <Link href="/login" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#6E1075] to-[#631974] text-white font-medium shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-[#C743DA]/30">Daxil ol</Link>
           )}
         </div>
       </div>
