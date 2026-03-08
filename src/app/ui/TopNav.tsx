@@ -10,7 +10,7 @@ export default async function TopNav() {
   const name = (session?.user as any)?.displayName || (session?.user as any)?.name || "";
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#C743DA]/20 shadow-xl">
+    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-lg border-b border-[#C743DA]/30 shadow-lg">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
         <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-3 text-sm font-medium text-[#501257] hover:opacity-90 transition-all duration-300 group">
           <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#6E1075] shadow-md text-xl">
