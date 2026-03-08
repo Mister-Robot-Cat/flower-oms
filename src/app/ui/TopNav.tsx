@@ -10,48 +10,56 @@ export default async function TopNav() {
   const name = (session?.user as any)?.displayName || (session?.user as any)?.name || "";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-space-border bg-white/95 backdrop-blur-sm shadow-sm">
+    <header className="sticky top-0 z-30 glass border-b border-border shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-        <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-2.5 text-sm font-semibold text-space-text-primary hover:opacity-80 transition-opacity">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-primary to-purple-600 text-white shadow-sm text-lg">🌸</span>
-          <span className="font-display text-xl font-bold bg-gradient-to-r from-brand-primary to-purple-600 bg-clip-text text-transparent">FlowerOMS</span>
+        <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-3 text-sm font-semibold text-text-primary hover:opacity-80 transition-opacity group">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-brand shadow-brand text-xl group-hover:scale-105 transition-transform">
+            🌸
+          </div>
+          <span className="font-display text-xl font-bold bg-gradient-brand bg-clip-text text-transparent">FlowerOMS</span>
         </Link>
+        
         <nav className="hidden gap-1 md:flex text-sm font-medium">
           {(role === "ADMIN" || role === "CALL_CENTER") && (
-            <Link href="/orders" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">Sifarişlər</Link>
+            <Link href="/orders" className="nav-link">Sifarişlər</Link>
           )}
           {role === "CALL_CENTER" && (
-            <Link href="/callcenter" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">Zəng mərkəzi</Link>
+            <Link href="/callcenter" className="nav-link">Zəng mərkəzi</Link>
           )}
           {role === "FLORIST" && (
-            <Link href="/florist" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">Florist</Link>
+            <Link href="/florist" className="nav-link">Florist</Link>
           )}
           {(role === "ADMIN" || role === "CALL_CENTER") && (
-            <Link href="/customers" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">Müştərilər</Link>
+            <Link href="/customers" className="nav-link">Müştərilər</Link>
           )}
           {role === "ADMIN" && (
             <>
-              <Link href="/admin/users" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">İstifadəçilər</Link>
-              <Link href="/admin/flowers" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">Anbar</Link>
-              <Link href="/admin/reports/performance" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">Performans</Link>
-              <Link href="/admin/reports/sales" className="px-3 py-2 rounded-lg text-space-text-secondary transition-colors hover:text-space-text-primary hover:bg-space-surface-light">Satışlar</Link>
+              <Link href="/admin/users" className="nav-link">İstifadəçilər</Link>
+              <Link href="/admin/flowers" className="nav-link">Anbar</Link>
+              <Link href="/admin/reports/performance" className="nav-link">Performans</Link>
+              <Link href="/admin/reports/sales" className="nav-link">Satışlar</Link>
             </>
           )}
         </nav>
+        
         <div className="flex items-center gap-3 text-sm">
           {session?.user ? (
             <>
-              <div className="hidden sm:flex items-center gap-2">
-                <Link href="/profile" className="text-space-text-secondary hover:text-space-text-primary transition-colors font-medium">
+              <div className="hidden sm:flex items-center gap-3">
+                <Link href="/profile" className="text-text-secondary hover:text-text-primary transition-colors font-medium">
                   {name}
                 </Link>
-                {role && <span className="inline-flex rounded-md border border-brand-primary/20 bg-brand-primary/10 px-2 py-1 text-xs font-semibold text-brand-primary">{role}</span>}
+                {role && (
+                  <span className="inline-flex rounded-lg border border-brand-500/20 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-600">
+                    {role}
+                  </span>
+                )}
               </div>
               <LogoutButton />
               <MobileMenu role={role} isAuthenticated={!!session?.user} />
             </>
           ) : (
-            <Link href="/login" className="rounded-lg border border-brand-primary bg-brand-primary px-4 py-2 text-white font-medium transition-all hover:bg-brand-primary-hover shadow-sm">Daxil ol</Link>
+            <Link href="/login" className="btn-primary">Daxil ol</Link>
           )}
         </div>
       </div>

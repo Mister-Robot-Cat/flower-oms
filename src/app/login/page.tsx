@@ -42,48 +42,75 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cosmic-gradient px-4">
-      <div className="w-full max-w-md rounded-xl bg-space-surface p-8 shadow-xl border border-space-border">
-        <div className="mb-6 text-center">
-          <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-cosmic-purple to-cosmic-purple-light text-2xl text-white">🌌</div>
-          <div className="mb-1 text-2xl font-bold font-display">Cosmic</div>
-          <p className="text-sm text-space-text-secondary">Daxil olun</p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-hero px-4">
+      <div className="w-full max-w-md">
+        {/* Logo and Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-brand shadow-brand-lg mb-4">
+            <span className="text-3xl">�</span>
+          </div>
+          <h1 className="text-3xl font-bold font-display bg-gradient-brand bg-clip-text text-transparent mb-2">
+            FlowerOMS
+          </h1>
+          <p className="text-text-secondary">Sistemə daxil olun</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-space-text-secondary mb-1">
-              İstifadəçi adı
-            </label>
-            <Input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-space-text-secondary mb-1">
-              Şifrə
-            </label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-cosmic-red mt-1 text-center">{error}</p>
-          )}
-          <Button
-            type="submit"
-            disabled={loading}
-            variant="primary"
-            className="mt-2 w-full"
-          >
-            {loading ? "Daxil olunur..." : "Daxil ol"}
-          </Button>
-        </form>
+
+        {/* Login Card */}
+        <div className="card card-hover p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-text-primary">
+                İstifadəçi adı
+              </label>
+              <Input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="İstifadəçi adını daxil edin"
+                required
+                className="text-base"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-text-primary">
+                Şifrə
+              </label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Şifrəni daxil edin"
+                required
+                className="text-base"
+              />
+            </div>
+
+            {error && (
+              <div className="bg-error-bg border border-error/20 rounded-lg p-3">
+                <p className="text-sm text-error text-center">{error}</p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loading}
+              loading={loading}
+              variant="primary"
+              size="lg"
+              className="w-full font-semibold"
+            >
+              {loading ? "Daxil olunur..." : "Daxil ol"}
+            </Button>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-text-muted">
+            Təhlükəsiz giriş • Şifrələr şifrələnir
+          </p>
+        </div>
       </div>
     </div>
   );

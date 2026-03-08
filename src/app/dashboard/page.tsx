@@ -50,67 +50,184 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-cosmic-gradient py-4 md:py-8 px-4">
-      <div className="mx-auto max-w-4xl rounded-xl bg-space-surface p-4 md:p-8 shadow-xl border border-space-border">
-        <h1 className="text-2xl font-semibold mb-2 font-display text-space-text-primary">{title}</h1>
-        <p className="text-sm text-space-text-secondary mb-6">Xoş gəlmisiniz! Rolunuz: {role}</p>
+    <div className="min-h-screen bg-gradient-hero py-6 md:py-10 px-4">
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold font-display bg-gradient-brand bg-clip-text text-transparent mb-2">
+            {title}
+          </h1>
+          <p className="text-text-secondary">Xoş gəlmisiniz! Rolunuz: <span className="font-semibold text-text-primary">{role}</span></p>
+        </div>
 
-        {/* Статистика */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl bg-white border border-space-border p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-2xl md:text-3xl font-bold text-brand-primary">{totalOrders}</div>
-            <div className="text-xs md:text-sm text-space-text-secondary mt-1.5 font-medium">Ümumi sifarişlər</div>
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="card card-hover p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center">
+                <span className="text-2xl">📊</span>
+              </div>
+              <div className="text-xs font-medium text-text-muted uppercase tracking-wide">Toplam</div>
+            </div>
+            <div className="text-3xl font-bold text-brand-600">{totalOrders}</div>
+            <div className="text-sm text-text-secondary mt-1">Ümumi sifarişlər</div>
           </div>
-          <div className="rounded-xl bg-white border border-space-border p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-2xl md:text-3xl font-bold text-info">{todayOrders}</div>
-            <div className="text-xs md:text-sm text-space-text-secondary mt-1.5 font-medium">Bu gün</div>
+
+          <div className="card card-hover p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-info-bg flex items-center justify-center">
+                <span className="text-2xl">📅</span>
+              </div>
+              <div className="text-xs font-medium text-text-muted uppercase tracking-wide">Bugün</div>
+            </div>
+            <div className="text-3xl font-bold text-info">{todayOrders}</div>
+            <div className="text-sm text-text-secondary mt-1">Bu gün</div>
           </div>
-          <div className="rounded-xl bg-white border border-space-border p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-2xl md:text-3xl font-bold text-success">{newOrders}</div>
-            <div className="text-xs md:text-sm text-space-text-secondary mt-1.5 font-medium">Yeni sifarişlər</div>
+
+          <div className="card card-hover p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-success-bg flex items-center justify-center">
+                <span className="text-2xl">✨</span>
+              </div>
+              <div className="text-xs font-medium text-text-muted uppercase tracking-wide">Yeni</div>
+            </div>
+            <div className="text-3xl font-bold text-success">{newOrders}</div>
+            <div className="text-sm text-text-secondary mt-1">Yeni sifarişlər</div>
           </div>
-          <div className="rounded-xl bg-white border border-space-border p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-2xl md:text-3xl font-bold text-warning">{readyOrders}</div>
-            <div className="text-xs md:text-sm text-space-text-secondary mt-1.5 font-medium">Hazır sifarişlər</div>
+
+          <div className="card card-hover p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-warning-bg flex items-center justify-center">
+                <span className="text-2xl">🎯</span>
+              </div>
+              <div className="text-xs font-medium text-text-muted uppercase tracking-wide">Hazır</div>
+            </div>
+            <div className="text-3xl font-bold text-warning">{readyOrders}</div>
+            <div className="text-sm text-text-secondary mt-1">Hazır sifarişlər</div>
           </div>
         </div>
 
+        {/* Florist Special Stats */}
         {role === "FLORIST" && (
-          <div className="mb-8 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 p-6 shadow-sm">
-            <div className="text-sm font-medium text-space-text-secondary uppercase tracking-wide mb-1">Mənim sifarişlərim</div>
-            <div className="text-4xl font-bold text-brand-primary">{myOrders}</div>
+          <div className="card bg-gradient-card p-6 mb-8 border-brand-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-text-muted uppercase tracking-wide mb-1">Mənim sifarişlərim</div>
+                <div className="text-4xl font-bold text-brand-600">{myOrders}</div>
+              </div>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-brand">
+                <span className="text-3xl">🌸</span>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Navigation Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {(role === "ADMIN" || role === "CALL_CENTER") && (
-            <Link href="/orders" className="group rounded-xl border border-space-border bg-white px-5 py-4 text-space-text-primary hover:border-brand-primary hover:bg-brand-primary/5 shadow-sm transition-all font-medium">
-              <span className="text-2xl mr-2">📦</span> Sifarişlər
+            <Link href="/orders" className="card card-hover p-6 group">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-brand-50 group-hover:bg-brand-100 transition-colors flex items-center justify-center">
+                  <span className="text-3xl">📦</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-text-primary group-hover:text-brand-600 transition-colors">Sifarişlər</div>
+                  <div className="text-sm text-text-secondary">Bütün sifarişləri idarə et</div>
+                </div>
+              </div>
             </Link>
           )}
+
+          {(role === "ADMIN" || role === "CALL_CENTER") && (
+            <Link href="/customers" className="card card-hover p-6 group">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-brand-50 group-hover:bg-brand-100 transition-colors flex items-center justify-center">
+                  <span className="text-3xl">👥</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-text-primary group-hover:text-brand-600 transition-colors">Müştərilər</div>
+                  <div className="text-sm text-text-secondary">Müştəri bazası</div>
+                </div>
+              </div>
+            </Link>
+          )}
+
           {role === "CALL_CENTER" && (
-            <Link href="/callcenter" className="group rounded-xl border border-space-border bg-white px-5 py-4 text-space-text-primary hover:border-brand-primary hover:bg-brand-primary/5 shadow-sm transition-all font-medium">
-              <span className="text-2xl mr-2">📞</span> Zəng mərkəzi
+            <Link href="/callcenter" className="card card-hover p-6 group">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-info-bg group-hover:bg-info transition-colors flex items-center justify-center">
+                  <span className="text-3xl">📞</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-text-primary group-hover:text-info transition-colors">Zəng mərkəzi</div>
+                  <div className="text-sm text-text-secondary">Telefon zəngləri</div>
+                </div>
+              </div>
             </Link>
           )}
+
           {role === "FLORIST" && (
-            <Link href="/florist" className="group rounded-xl border border-space-border bg-white px-5 py-4 text-space-text-primary hover:border-brand-primary hover:bg-brand-primary/5 shadow-sm transition-all font-medium">
-              <span className="text-2xl mr-2">🌸</span> Florist paneli
+            <Link href="/florist" className="card card-hover p-6 group">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-xl bg-brand-50 group-hover:bg-brand-100 transition-colors flex items-center justify-center">
+                  <span className="text-3xl">🌸</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-text-primary group-hover:text-brand-600 transition-colors">Florist paneli</div>
+                  <div className="text-sm text-text-secondary">Sifarişləri hazırla</div>
+                </div>
+              </div>
             </Link>
           )}
+
           {role === "ADMIN" && (
             <>
-              <Link href="/admin/users" className="group rounded-xl border border-space-border bg-white px-5 py-4 text-space-text-primary hover:border-brand-primary hover:bg-brand-primary/5 shadow-sm transition-all font-medium">
-                <span className="text-2xl mr-2">👥</span> İstifadəçilər
+              <Link href="/admin/users" className="card card-hover p-6 group">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-brand-50 group-hover:bg-brand-100 transition-colors flex items-center justify-center">
+                    <span className="text-3xl">👤</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-text-primary group-hover:text-brand-600 transition-colors">İstifadəçilər</div>
+                    <div className="text-sm text-text-secondary">İstifadəçi idarəsi</div>
+                  </div>
+                </div>
               </Link>
-              <Link href="/admin/flowers" className="group rounded-xl border border-space-border bg-white px-5 py-4 text-space-text-primary hover:border-brand-primary hover:bg-brand-primary/5 shadow-sm transition-all font-medium">
-                <span className="text-2xl mr-2">🏪</span> Anbar
+
+              <Link href="/admin/flowers" className="card card-hover p-6 group">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-brand-50 group-hover:bg-brand-100 transition-colors flex items-center justify-center">
+                    <span className="text-3xl">🏪</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-text-primary group-hover:text-brand-600 transition-colors">Anbar</div>
+                    <div className="text-sm text-text-secondary">Məhsul idarəsi</div>
+                  </div>
+                </div>
               </Link>
-              <Link href="/admin/reports/performance" className="group rounded-xl border border-space-border bg-white px-5 py-4 text-space-text-primary hover:border-brand-primary hover:bg-brand-primary/5 shadow-sm transition-all font-medium">
-                <span className="text-2xl mr-2">📊</span> Performans
+
+              <Link href="/admin/reports/performance" className="card card-hover p-6 group">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-brand-50 group-hover:bg-brand-100 transition-colors flex items-center justify-center">
+                    <span className="text-3xl">📊</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-text-primary group-hover:text-brand-600 transition-colors">Performans</div>
+                    <div className="text-sm text-text-secondary">Hesabatlar</div>
+                  </div>
+                </div>
               </Link>
-              <Link href="/admin/reports/sales" className="group rounded-xl border border-space-border bg-white px-5 py-4 text-space-text-primary hover:border-brand-primary hover:bg-brand-primary/5 shadow-sm transition-all font-medium">
-                <span className="text-2xl mr-2">💰</span> Satışlar
+
+              <Link href="/admin/reports/sales" className="card card-hover p-6 group">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-brand-50 group-hover:bg-brand-100 transition-colors flex items-center justify-center">
+                    <span className="text-3xl">💰</span>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-text-primary group-hover:text-brand-600 transition-colors">Satışlar</div>
+                    <div className="text-sm text-text-secondary">Satış hesabatları</div>
+                  </div>
+                </div>
               </Link>
             </>
           )}

@@ -2,11 +2,23 @@
 
 import React from "react";
 
-export default function Input({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
+export default function Input({ 
+  className = "", 
+  error = false,
+  ...props 
+}: React.InputHTMLAttributes<HTMLInputElement> & { error?: boolean }) {
+  const baseClasses = "w-full bg-surface border text-text-primary placeholder:text-text-muted focus:outline-none disabled:bg-surface-hover disabled:cursor-not-allowed disabled:text-text-muted read-only:bg-surface-hover read-only:cursor-default transition-all-smooth leading-5 shadow-sm";
+  
+  const sizeClasses = "px-4 py-3 rounded-xl text-sm";
+  
+  const stateClasses = error 
+    ? "border-error focus:ring-error/20 focus:border-error" 
+    : "border-border focus:ring-brand-500/20 focus:border-brand-500 hover:border-border-strong";
+
   return (
     <input
       {...props}
-      className={`w-full rounded-lg bg-white border border-space-border px-3 py-2.5 text-sm text-space-text-primary placeholder:text-space-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary disabled:bg-space-surface-light disabled:cursor-not-allowed disabled:text-space-text-muted read-only:bg-space-surface-light read-only:cursor-default transition-all duration-200 leading-5 shadow-sm ${className}`}
+      className={`${baseClasses} ${sizeClasses} ${stateClasses} ${className}`}
     />
   );
 }
