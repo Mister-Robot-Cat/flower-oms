@@ -54,10 +54,10 @@ function LoginForm() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo and Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-[#6E1075] to-[#631974] shadow-2xl mb-4 ring-4 ring-[#C743DA]/20 backdrop-blur-sm border border-[#C743DA]/30">
-            <span className="text-4xl filter drop-shadow-lg">🌸</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#6E1075] shadow-lg mb-4">
+            <span className="text-3xl">🌸</span>
           </div>
-          <h1 className="text-4xl font-display bg-gradient-to-r from-[#6E1075] via-[#C743DA] to-[#631974] bg-clip-text text-transparent mb-3 tracking-tight">
+          <h1 className="text-3xl font-display text-[#501257] mb-3 font-semibold">
             COSMIC
           </h1>
           <p className="text-[#501257] text-lg font-light tracking-wide">Premium Sistem</p>
@@ -114,7 +114,7 @@ function LoginForm() {
               loading={loading}
               variant="primary"
               size="lg"
-              className="w-full font-semibold text-lg shadow-xl hover:shadow-2xl bg-gradient-to-r from-[#6E1075] to-[#631974] hover:from-[#631974] hover:to-[#501257] border border-[#C743DA]/30"
+              className="w-full font-semibold text-lg shadow-xl hover:shadow-2xl"
             >
               {loading ? "Daxil olunur..." : "Daxil ol"}
             </Button>

@@ -13,10 +13,10 @@ export default async function TopNav() {
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-[#C743DA]/20 shadow-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
         <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-3 text-sm font-medium text-[#501257] hover:opacity-90 transition-all duration-300 group">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E1075] to-[#631974] shadow-xl text-xl group-hover:scale-105 transition-transform duration-300 ring-2 ring-[#C743DA]/30">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#6E1075] shadow-md text-xl">
             🌸
           </div>
-          <span className="font-display text-2xl font-medium bg-gradient-to-r from-[#6E1075] via-[#C743DA] to-[#631974] bg-clip-text text-transparent">COSMIC</span>
+          <span className="font-display text-xl font-medium text-[#501257]">COSMIC</span>
         </Link>
         
         <nav className="hidden gap-2 md:flex text-sm font-medium">
@@ -50,7 +50,7 @@ export default async function TopNav() {
                   {name}
                 </Link>
                 {role && (
-                  <span className="inline-flex rounded-xl border border-[#C743DA]/30 bg-gradient-to-r from-[#F3F1F2] to-[#E8D5E8] px-4 py-1.5 text-xs font-semibold text-[#501257] shadow-lg">
+                  <span className="inline-flex rounded-lg border border-[#C743DA]/30 bg-[#F3F1F2] px-3 py-1 text-xs font-medium text-[#501257]">
                     {role}
                   </span>
                 )}
@@ -59,7 +59,7 @@ export default async function TopNav() {
               <MobileMenu role={role} isAuthenticated={!!session?.user} />
             </>
           ) : (
-            <Link href="/login" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#6E1075] to-[#631974] text-white font-medium shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-[#C743DA]/30">Daxil ol</Link>
+            <Link href="/login" className="px-6 py-2.5 rounded-xl bg-[#6E1075] text-white font-medium shadow-md hover:shadow-lg transition-all duration-200">Daxil ol</Link>
           )}
         </div>
       </div>

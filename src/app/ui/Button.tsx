@@ -32,17 +32,17 @@ export default function Button({
 
   const variantStyles: Record<Variant, string> = {
     primary:
-      "bg-gradient-to-r from-[#6E1075] to-[#631974] text-white hover:from-[#631974] hover:to-[#501257] focus:ring-4 focus:ring-[#C743DA]/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30 backdrop-blur-sm",
+      "bg-[#6E1075] text-white hover:bg-[#631974] focus:ring-2 focus:ring-[#6E1075]/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
     secondary:
-      "bg-white/90 backdrop-blur-sm text-[#501257] border border-[#C743DA]/40 hover:bg-white hover:border-[#6E1075]/50 focus:ring-4 focus:ring-[#C743DA]/20 disabled:opacity-50 shadow-lg hover:shadow-xl transition-all duration-300",
+      "bg-white text-[#501257] border border-[#C743DA]/30 hover:bg-[#F3F1F2] hover:border-[#631974] focus:ring-2 focus:ring-[#C743DA]/20 disabled:opacity-50 transition-all duration-200",
     destructive:
-      "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 focus:ring-4 focus:ring-red-400/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30",
+      "bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
     ghost:
-      "text-[#631974] hover:text-[#501257] hover:bg-[#F3F1F2] focus:ring-4 focus:ring-[#C743DA]/20 disabled:opacity-50 transition-all duration-300 font-medium",
+      "text-[#631974] hover:bg-[#F3F1F2] hover:text-[#501257] focus:ring-2 focus:ring-[#C743DA]/20 disabled:opacity-50 transition-all duration-200",
     success:
-      "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 focus:ring-4 focus:ring-green-400/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30",
+      "bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-500/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
     accent:
-      "bg-gradient-to-r from-[#C743DA] to-[#6E1075] text-white hover:from-[#6E1075] hover:to-[#631974] focus:ring-4 focus:ring-[#C743DA]/30 disabled:opacity-60 shadow-xl hover:shadow-2xl transition-all duration-300 border border-[#C743DA]/30 backdrop-blur-sm",
+      "bg-[#C743DA] text-white hover:bg-[#6E1075] focus:ring-2 focus:ring-[#C743DA]/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
   };
 
   return (
