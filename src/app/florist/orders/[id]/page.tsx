@@ -33,7 +33,17 @@ export default async function FloristOrderPage({ params }: Props) {
     prisma.orderPhoto.findMany({
       where: { orderId: id },
       orderBy: { createdAt: "desc" },
-      select: { id: true, fileName: true, filePath: true },
+      select: { 
+        id: true, 
+        fileName: true, 
+        filePath: true,
+        uploader: {
+          select: {
+            id: true,
+            role: true,
+          }
+        }
+      },
     }),
   ]);
   
@@ -42,8 +52,12 @@ export default async function FloristOrderPage({ params }: Props) {
   const clientOrder = {
     id: order.id,
     customerFullName: order.customerFullName,
+    customerPhone: order.customerPhone,
     deliveryDate: order.deliveryDate.toISOString(),
     deliveryTime: order.deliveryTime,
+    deliveryAddress: order.deliveryAddress,
+    orderType: order.orderType,
+    amount: order.amount.toString(),
     status: order.status,
     assignedToId: order.assignedToId,
     assignedToName: order.assignedTo?.displayName ?? null,

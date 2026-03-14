@@ -71,17 +71,30 @@
 @layer base {
   html, body { 
     min-height: 100%; 
+    overflow-x: hidden;
+    width: 100%;
   }
   
   body {
     background: var(--color-bg-primary);
     color: var(--color-text-primary);
     font-family: var(--font-clother), system-ui, -apple-system, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
-    line-height: 1.5;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Prevent horizontal scroll on all elements */
+  * {
+    max-width: 100%;
+  }
+  
+  /* Responsive images and media */
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
   }
 
   /* Minimalist font styling */
@@ -236,5 +249,88 @@
   
   .shadow-glow-pink {
     box-shadow: var(--shadow-md);
+  }
+  
+  /* Responsive utilities */
+  .container-responsive {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .container-responsive {
+      max-width: 640px;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .container-responsive {
+      max-width: 768px;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container-responsive {
+      max-width: 1024px;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .container-responsive {
+      max-width: 1280px;
+    }
+  }
+  
+  /* Mobile-friendly text sizes */
+  .text-responsive-xs {
+    font-size: 0.75rem;
+  }
+  
+  .text-responsive-sm {
+    font-size: 0.875rem;
+  }
+  
+  .text-responsive-base {
+    font-size: 1rem;
+  }
+  
+  .text-responsive-lg {
+    font-size: 1.125rem;
+  }
+  
+  .text-responsive-xl {
+    font-size: 1.25rem;
+  }
+  
+  @media (min-width: 768px) {
+    .text-responsive-lg {
+      font-size: 1.25rem;
+    }
+    
+    .text-responsive-xl {
+      font-size: 1.5rem;
+    }
+  }
+  
+  /* Mobile-friendly spacing */
+  .spacing-mobile {
+    padding: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .spacing-mobile {
+      padding: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .spacing-mobile {
+      padding: 2rem;
+    }
   }
 }

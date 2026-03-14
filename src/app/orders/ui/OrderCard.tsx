@@ -36,23 +36,23 @@ export default function OrderCard({ order }: OrderCardProps) {
     >
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
-          <div className="text-xs text-space-text-secondary mb-1">#{order.id.slice(0, 8)}</div>
-          <div className="font-medium text-space-text-primary">{order.customerFullName}</div>
+          <div className="text-sm text-space-text-secondary mb-1">#{order.id.slice(0, 8)}</div>
+          <div className="font-semibold text-lg text-space-text-primary">{order.customerFullName}</div>
         </div>
         <Badge variant={order.badgeVariant}>
           {order.formattedStatus}
         </Badge>
       </div>
       
-      <div className="mt-3 space-y-1 text-sm">
+      <div className="mt-3 space-y-2 text-base">
         <div className="flex items-center gap-2 text-space-text-secondary">
-          <span>📅</span>
-          <span>{order.deliveryDate} {order.deliveryTime}</span>
+          <span className="text-lg">📅</span>
+          <span className="font-medium">{order.deliveryDate} {order.deliveryTime}</span>
         </div>
         {order.assignedTo && (
           <div className="flex items-center gap-2 text-space-text-secondary">
-            <span>👤</span>
-            <span>{order.assignedTo.displayName}</span>
+            <span className="text-lg">👤</span>
+            <span className="font-medium">{order.assignedTo.displayName}</span>
           </div>
         )}
       </div>

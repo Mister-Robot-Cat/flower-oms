@@ -20,6 +20,16 @@ type UsageItem = {
   quantity: number;
 };
 
+type PhotoType = {
+  id: string;
+  fileName: string;
+  filePath: string;
+  uploader: {
+    id: string;
+    role: string;
+  };
+};
+
 export default function PrepOrder({
   order,
   flowers,
@@ -29,15 +39,19 @@ export default function PrepOrder({
   order: {
     id: string;
     customerFullName: string;
+    customerPhone: string;
     deliveryDate: string;
     deliveryTime: string;
+    deliveryAddress: string | null;
+    orderType: string;
+    amount: string;
     status: string;
     assignedToId: string | null;
     assignedToName: string | null;
   };
   flowers: Flower[];
   initialUsages: UsageItem[];
-  photos?: Array<{ id: string; fileName: string; filePath: string }>;
+  photos?: PhotoType[];
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -47,8 +61,16 @@ export default function PrepOrder({
   const [readyLoading, setReadyLoading] = useState(false);
   const [prepNotes, setPrepNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [photos, setPhotos] = useState<Array<{ id: string; fileName: string; filePath: string }>>(initialPhotos);
+  const [photos, setPhotos] = useState<PhotoType[]>(initialPhotos);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Разделяем фотографии по источнику
+  const callCenterPhotos = photos.filter(p => p.uploader.role === 'CALL_CENTER');
+  const floristPhotos = photos.filter(p => p.uploader.role === 'FLORIST');
   const [selectedStatus, setSelectedStatus] = useState<string>(order.status);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const filteredFlowers = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -115,70 +137,104 @@ export default function PrepOrder({
     }
   }
 
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append("photos", files[i]);
+      }
+
+      const res = await fetch(`/api/orders/${order.id}/photos`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Şəkil yüklənmədi");
+      }
+
+      router.refresh();
+      setSaveMsg("Şəkillər yükləndi");
+    } catch (err: any) {
+      setUploadError(err.message || "Xəta baş verdi");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handlePhotoDelete(photoId: string) {
+    if (!confirm("Şəkli silmək istədiyinizdən əminsiniz?")) return;
+
+    setDeleting(photoId);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/photos/${photoId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Şəkil silinmədi");
+      }
+
+      router.refresh();
+      setSaveMsg("Şəkil silindi");
+    } catch (err: any) {
+      setUploadError(err.message || "Xəta baş verdi");
+    } finally {
+      setDeleting(null);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cosmic-gradient py-8">
       <div className="mx-auto max-w-6xl rounded-xl bg-space-surface p-6 shadow-xl border border-space-border">
-        <div className="mb-4">
-          <div className="text-sm text-space-text-secondary">{order.id.slice(0, 8)}</div>
-          <h1 className="text-2xl font-semibold text-space-text-primary font-display">{order.customerFullName}</h1>
-          <div className="text-sm text-space-text-primary">
-            {order.deliveryDate.slice(0, 10)} {order.deliveryTime}
+        {/* Основная информация крупным шрифтом */}
+        <div className="mb-6 p-6 bg-white rounded-xl border-2 border-gray-300">
+          <div className="text-3xl font-bold text-gray-900 mb-3">
+            📅 {new Date(order.deliveryDate).toLocaleDateString('az-AZ', { day: 'numeric', month: 'long' })}
           </div>
+          <div className="text-2xl font-bold text-gray-900 mb-4">
+            🕒 {order.deliveryTime}
+          </div>
+          <div className="text-2xl font-bold text-gray-900 mb-3">
+            👤 {order.customerFullName}
+          </div>
+          <div className="text-xl font-semibold text-gray-700 mb-3">
+            📞 {order.customerPhone}
+          </div>
+          {order.orderType === 'DELIVERY' && order.deliveryAddress && (
+            <div className="text-lg font-medium text-gray-700 mb-3">
+              📍 {order.deliveryAddress}
+            </div>
+          )}
+          <div className="text-xl font-bold text-purple-700 mb-4">
+            💰 {Number(order.amount).toFixed(2)} ₼
+          </div>
+          <Button onClick={() => setShowPaymentModal(true)} variant="primary" className="text-base px-5 py-2">
+            💳 Ödəniş idarə et
+          </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-lg font-semibold mb-2 text-space-text-primary">Çiçəklər</h2>
-            <Input
-              className="mb-3"
-              placeholder="Axtar..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <div className="max-h-80 overflow-auto border border-space-border rounded-md divide-y divide-space-border bg-space-surface-light">
-              {filteredFlowers.map((f) => {
-                const existing = usages.find((u) => u.flowerId === f.id);
-                return (
-                  <div key={f.id} className="p-3 flex items-center justify-between gap-3">
-                    <div>
-                      <div className="font-medium text-space-text-primary">{f.name}</div>
-                      <div className="text-xs text-space-text-secondary">
-                        Ehtiyat: {f.stockQuantity} ({f.unitType})
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min={0}
-                        className="w-24"
-                        value={existing?.quantity ?? 0}
-                        onChange={(e) => upsertUsage(f, Number(e.target.value))}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-              {filteredFlowers.length === 0 && (
-                <div className="p-3 text-sm text-space-text-secondary">Nəticə yoxdur</div>
-              )}
-            </div>
-            <div className="mt-3 flex items-center gap-3">
-              <Button onClick={saveUsage} disabled={saving} variant="secondary">
-                {saving ? "Yazılır..." : "İstifadəni yadda saxla"}
-              </Button>
-              {saveMsg && <span className="text-sm text-cosmic-green">{saveMsg}</span>}
-            </div>
-
-            <div className="mt-8">
-              <h2 className="text-lg font-semibold mb-2 text-space-text-primary">Şəkillər sifarişdən</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {photos.map((p) => (
+        {/* Фотографии от колл-центра */}
+        {callCenterPhotos.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-4 text-blue-900">📋 Şəkillər sifarişdən (Call Center)</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {callCenterPhotos.map((p) => (
+                <div key={p.id} className="relative group">
                   <a
-                    key={p.id}
                     href={p.filePath}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-lg border border-space-border overflow-hidden hover:border-cosmic-purple transition-colors"
+                    className="block rounded-xl border-2 border-blue-300 overflow-hidden hover:border-blue-500 transition-colors shadow-lg"
                   >
                     <img
                       src={p.filePath}
@@ -186,69 +242,130 @@ export default function PrepOrder({
                       className="w-full aspect-square object-cover"
                     />
                   </a>
-                ))}
-                {photos.length === 0 && (
-                  <div className="col-span-full text-sm text-space-text-secondary text-center py-4">
-                    Şəkil yoxdur
-                  </div>
-                )}
-              </div>
+                  <button
+                    onClick={() => handlePhotoDelete(p.id)}
+                    disabled={deleting === p.id}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                    title="Şəkli sil"
+                  >
+                    {deleting === p.id ? "⏳" : "🗑️"}
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
+        )}
 
-          <div>
-            <h2 className="text-lg font-semibold mb-3 text-space-text-primary">Status və qeydlər</h2>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-space-text-primary">
-                Sifariş statusu
-              </label>
-              <Select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="mb-3"
-              >
-                <option value="NEW">Yeni</option>
-                <option value="IN_PROGRESS">İşlənir</option>
-                <option value="READY">Hazır</option>
-                <option value="PICKUP">Götürülməyə hazır</option>
-                <option value="OUT_FOR_DELIVERY">Çatdırılır</option>
-                <option value="COMPLETED">Tamamlandı</option>
-              </Select>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-space-text-primary">
-                Hazırlıq qeydləri
-              </label>
-              <textarea
-                className="w-full rounded-lg bg-white border border-space-border px-3 py-2.5 text-sm text-space-text-primary placeholder:text-space-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all duration-200 shadow-sm"
-                rows={4}
-                placeholder="Daxili qeydlər..."
-                value={prepNotes}
-                onChange={(e) => setPrepNotes(e.target.value)}
-              />
-            </div>
-
-            {error && (
-              <div className="mb-3 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
-            
-            {saveMsg && (
-              <div className="mb-3 rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                {saveMsg}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <Button onClick={updateStatus} disabled={readyLoading} variant="primary">
-                {readyLoading ? "Yenilənir..." : "Statusu yenilə"}
-              </Button>
+        {/* Фотографии готового букета от флориста */}
+        {floristPhotos.length > 0 && (
+          <div className="mb-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-300">
+            <h2 className="text-2xl font-bold mb-4 text-green-900">🌸 Hazır buketin şəkilləri (Florist)</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {floristPhotos.map((p) => (
+                <div key={p.id} className="relative group">
+                  <a
+                    href={p.filePath}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-xl border-2 border-green-400 overflow-hidden hover:border-green-600 transition-colors shadow-lg"
+                  >
+                    <img
+                      src={p.filePath}
+                      alt={p.fileName}
+                      className="w-full aspect-square object-cover"
+                    />
+                  </a>
+                  <button
+                    onClick={() => handlePhotoDelete(p.id)}
+                    disabled={deleting === p.id}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                    title="Şəkli sil"
+                  >
+                    {deleting === p.id ? "⏳" : "🗑️"}
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
+        )}
+
+        {/* Раздел для загрузки фотографий готового букета */}
+        <div className="mt-8 p-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl border-2 border-purple-300 shadow-lg">
+          <h2 className="text-2xl font-bold mb-4 text-purple-900 flex items-center gap-2">
+            📸 Hazır buketin şəkillərini əlavə et
+          </h2>
+          
+          <div className="mb-4">
+            <label className="block w-full cursor-pointer">
+              <div className="border-2 border-dashed border-purple-400 rounded-xl p-8 text-center bg-white hover:bg-purple-50 transition-colors">
+                <div className="text-4xl mb-3">📷</div>
+                <div className="text-lg font-semibold text-purple-900 mb-2">
+                  {uploading ? "Yüklənir..." : "Şəkil seçin"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Bir və ya bir neçə şəkil seçə bilərsiniz
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handlePhotoUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </div>
+            </label>
+          </div>
+
+          {uploadError && (
+            <div className="mb-3 rounded-lg bg-red-50 border border-red-300 px-4 py-3 text-sm text-red-700">
+              ❌ {uploadError}
+            </div>
+          )}
+
+          {saveMsg && (
+            <div className="mb-3 rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
+              ✅ {saveMsg}
+            </div>
+          )}
         </div>
+
+        {/* Модальное окно для управления оплатой */}
+        {showPaymentModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+              <h2 className="text-2xl font-bold mb-6 text-gray-900">💳 Ödəniş idarəsi</h2>
+              
+              <div className="mb-6">
+                <div className="text-3xl font-bold text-purple-700 mb-4">
+                  Məbləğ: {Number(order.amount).toFixed(2)} ₼
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                <button className="w-full py-4 px-6 bg-green-500 hover:bg-green-600 text-white font-bold text-lg rounded-xl transition-colors">
+                  💵 Nağd ödəniş
+                </button>
+                <button className="w-full py-4 px-6 bg-blue-500 hover:bg-blue-600 text-white font-bold text-lg rounded-xl transition-colors">
+                  💳 Kart ilə ödəniş
+                </button>
+                <button className="w-full py-4 px-6 bg-purple-500 hover:bg-purple-600 text-white font-bold text-lg rounded-xl transition-colors">
+                  🔀 Qarışıq ödəniş (Nağd + Kart)
+                </button>
+                <button className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl transition-colors">
+                  📝 Borc
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setShowPaymentModal(false)}
+                className="w-full py-3 px-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition-colors"
+              >
+                Bağla
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

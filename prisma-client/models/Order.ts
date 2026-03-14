@@ -27,15 +27,18 @@ export type AggregateOrder = {
 }
 
 export type OrderAvgAggregateOutputType = {
+  orderNumber: number | null
   amount: runtime.Decimal | null
 }
 
 export type OrderSumAggregateOutputType = {
+  orderNumber: number | null
   amount: runtime.Decimal | null
 }
 
 export type OrderMinAggregateOutputType = {
   id: string | null
+  orderNumber: number | null
   customerFullName: string | null
   customerPhone: string | null
   deliveryDate: Date | null
@@ -56,6 +59,7 @@ export type OrderMinAggregateOutputType = {
 
 export type OrderMaxAggregateOutputType = {
   id: string | null
+  orderNumber: number | null
   customerFullName: string | null
   customerPhone: string | null
   deliveryDate: Date | null
@@ -76,6 +80,7 @@ export type OrderMaxAggregateOutputType = {
 
 export type OrderCountAggregateOutputType = {
   id: number
+  orderNumber: number
   customerFullName: number
   customerPhone: number
   deliveryDate: number
@@ -97,15 +102,18 @@ export type OrderCountAggregateOutputType = {
 
 
 export type OrderAvgAggregateInputType = {
+  orderNumber?: true
   amount?: true
 }
 
 export type OrderSumAggregateInputType = {
+  orderNumber?: true
   amount?: true
 }
 
 export type OrderMinAggregateInputType = {
   id?: true
+  orderNumber?: true
   customerFullName?: true
   customerPhone?: true
   deliveryDate?: true
@@ -126,6 +134,7 @@ export type OrderMinAggregateInputType = {
 
 export type OrderMaxAggregateInputType = {
   id?: true
+  orderNumber?: true
   customerFullName?: true
   customerPhone?: true
   deliveryDate?: true
@@ -146,6 +155,7 @@ export type OrderMaxAggregateInputType = {
 
 export type OrderCountAggregateInputType = {
   id?: true
+  orderNumber?: true
   customerFullName?: true
   customerPhone?: true
   deliveryDate?: true
@@ -253,6 +263,7 @@ export type OrderGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 
 export type OrderGroupByOutputType = {
   id: string
+  orderNumber: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date
@@ -296,6 +307,7 @@ export type OrderWhereInput = {
   OR?: Prisma.OrderWhereInput[]
   NOT?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
   id?: Prisma.StringFilter<"Order"> | string
+  orderNumber?: Prisma.IntFilter<"Order"> | number
   customerFullName?: Prisma.StringFilter<"Order"> | string
   customerPhone?: Prisma.StringFilter<"Order"> | string
   deliveryDate?: Prisma.DateTimeFilter<"Order"> | Date | string
@@ -324,6 +336,7 @@ export type OrderWhereInput = {
 
 export type OrderOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  orderNumber?: Prisma.SortOrder
   customerFullName?: Prisma.SortOrder
   customerPhone?: Prisma.SortOrder
   deliveryDate?: Prisma.SortOrder
@@ -353,6 +366,7 @@ export type OrderOrderByWithRelationInput = {
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  orderNumber?: number
   AND?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
   OR?: Prisma.OrderWhereInput[]
   NOT?: Prisma.OrderWhereInput | Prisma.OrderWhereInput[]
@@ -380,10 +394,11 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   photos?: Prisma.OrderPhotoListRelationFilter
   events?: Prisma.OrderEventListRelationFilter
   stockEvents?: Prisma.StockEventListRelationFilter
-}, "id">
+}, "id" | "orderNumber">
 
 export type OrderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  orderNumber?: Prisma.SortOrder
   customerFullName?: Prisma.SortOrder
   customerPhone?: Prisma.SortOrder
   deliveryDate?: Prisma.SortOrder
@@ -412,6 +427,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   OR?: Prisma.OrderScalarWhereWithAggregatesInput[]
   NOT?: Prisma.OrderScalarWhereWithAggregatesInput | Prisma.OrderScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  orderNumber?: Prisma.IntWithAggregatesFilter<"Order"> | number
   customerFullName?: Prisma.StringWithAggregatesFilter<"Order"> | string
   customerPhone?: Prisma.StringWithAggregatesFilter<"Order"> | string
   deliveryDate?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
@@ -432,6 +448,7 @@ export type OrderScalarWhereWithAggregatesInput = {
 
 export type OrderCreateInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -456,6 +473,7 @@ export type OrderCreateInput = {
 
 export type OrderUncheckedCreateInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -504,6 +522,7 @@ export type OrderUpdateInput = {
 
 export type OrderUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -528,6 +547,7 @@ export type OrderUncheckedUpdateInput = {
 
 export type OrderCreateManyInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -564,6 +584,7 @@ export type OrderUpdateManyMutationInput = {
 
 export type OrderUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -600,6 +621,7 @@ export type OrderOrderByRelevanceInput = {
 
 export type OrderCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  orderNumber?: Prisma.SortOrder
   customerFullName?: Prisma.SortOrder
   customerPhone?: Prisma.SortOrder
   deliveryDate?: Prisma.SortOrder
@@ -619,11 +641,13 @@ export type OrderCountOrderByAggregateInput = {
 }
 
 export type OrderAvgOrderByAggregateInput = {
+  orderNumber?: Prisma.SortOrder
   amount?: Prisma.SortOrder
 }
 
 export type OrderMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  orderNumber?: Prisma.SortOrder
   customerFullName?: Prisma.SortOrder
   customerPhone?: Prisma.SortOrder
   deliveryDate?: Prisma.SortOrder
@@ -644,6 +668,7 @@ export type OrderMaxOrderByAggregateInput = {
 
 export type OrderMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  orderNumber?: Prisma.SortOrder
   customerFullName?: Prisma.SortOrder
   customerPhone?: Prisma.SortOrder
   deliveryDate?: Prisma.SortOrder
@@ -663,6 +688,7 @@ export type OrderMinOrderByAggregateInput = {
 }
 
 export type OrderSumOrderByAggregateInput = {
+  orderNumber?: Prisma.SortOrder
   amount?: Prisma.SortOrder
 }
 
@@ -860,6 +886,14 @@ export type EnumOrderStatusFieldUpdateOperationsInput = {
   set?: $Enums.OrderStatus
 }
 
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type OrderCreateNestedOneWithoutFlowerUsagesInput = {
   create?: Prisma.XOR<Prisma.OrderCreateWithoutFlowerUsagesInput, Prisma.OrderUncheckedCreateWithoutFlowerUsagesInput>
   connectOrCreate?: Prisma.OrderCreateOrConnectWithoutFlowerUsagesInput
@@ -920,6 +954,7 @@ export type OrderUpdateOneRequiredWithoutEventsNestedInput = {
 
 export type OrderCreateWithoutCreatedByInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -943,6 +978,7 @@ export type OrderCreateWithoutCreatedByInput = {
 
 export type OrderUncheckedCreateWithoutCreatedByInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -976,6 +1012,7 @@ export type OrderCreateManyCreatedByInputEnvelope = {
 
 export type OrderCreateWithoutAssignedToInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -999,6 +1036,7 @@ export type OrderCreateWithoutAssignedToInput = {
 
 export type OrderUncheckedCreateWithoutAssignedToInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1032,6 +1070,7 @@ export type OrderCreateManyAssignedToInputEnvelope = {
 
 export type OrderCreateWithoutPreparedByInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1055,6 +1094,7 @@ export type OrderCreateWithoutPreparedByInput = {
 
 export type OrderUncheckedCreateWithoutPreparedByInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1107,6 +1147,7 @@ export type OrderScalarWhereInput = {
   OR?: Prisma.OrderScalarWhereInput[]
   NOT?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
   id?: Prisma.StringFilter<"Order"> | string
+  orderNumber?: Prisma.IntFilter<"Order"> | number
   customerFullName?: Prisma.StringFilter<"Order"> | string
   customerPhone?: Prisma.StringFilter<"Order"> | string
   deliveryDate?: Prisma.DateTimeFilter<"Order"> | Date | string
@@ -1159,6 +1200,7 @@ export type OrderUpdateManyWithWhereWithoutPreparedByInput = {
 
 export type OrderCreateWithoutCustomerInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1182,6 +1224,7 @@ export type OrderCreateWithoutCustomerInput = {
 
 export type OrderUncheckedCreateWithoutCustomerInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1231,6 +1274,7 @@ export type OrderUpdateManyWithWhereWithoutCustomerInput = {
 
 export type OrderCreateWithoutFlowerUsagesInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1254,6 +1298,7 @@ export type OrderCreateWithoutFlowerUsagesInput = {
 
 export type OrderUncheckedCreateWithoutFlowerUsagesInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1316,6 +1361,7 @@ export type OrderUpdateWithoutFlowerUsagesInput = {
 
 export type OrderUncheckedUpdateWithoutFlowerUsagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1339,6 +1385,7 @@ export type OrderUncheckedUpdateWithoutFlowerUsagesInput = {
 
 export type OrderCreateWithoutStockEventsInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1362,6 +1409,7 @@ export type OrderCreateWithoutStockEventsInput = {
 
 export type OrderUncheckedCreateWithoutStockEventsInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1424,6 +1472,7 @@ export type OrderUpdateWithoutStockEventsInput = {
 
 export type OrderUncheckedUpdateWithoutStockEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1447,6 +1496,7 @@ export type OrderUncheckedUpdateWithoutStockEventsInput = {
 
 export type OrderCreateWithoutPhotosInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1470,6 +1520,7 @@ export type OrderCreateWithoutPhotosInput = {
 
 export type OrderUncheckedCreateWithoutPhotosInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1532,6 +1583,7 @@ export type OrderUpdateWithoutPhotosInput = {
 
 export type OrderUncheckedUpdateWithoutPhotosInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1555,6 +1607,7 @@ export type OrderUncheckedUpdateWithoutPhotosInput = {
 
 export type OrderCreateWithoutEventsInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1578,6 +1631,7 @@ export type OrderCreateWithoutEventsInput = {
 
 export type OrderUncheckedCreateWithoutEventsInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1640,6 +1694,7 @@ export type OrderUpdateWithoutEventsInput = {
 
 export type OrderUncheckedUpdateWithoutEventsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1663,6 +1718,7 @@ export type OrderUncheckedUpdateWithoutEventsInput = {
 
 export type OrderCreateManyCreatedByInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1682,6 +1738,7 @@ export type OrderCreateManyCreatedByInput = {
 
 export type OrderCreateManyAssignedToInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1701,6 +1758,7 @@ export type OrderCreateManyAssignedToInput = {
 
 export type OrderCreateManyPreparedByInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1743,6 +1801,7 @@ export type OrderUpdateWithoutCreatedByInput = {
 
 export type OrderUncheckedUpdateWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1766,6 +1825,7 @@ export type OrderUncheckedUpdateWithoutCreatedByInput = {
 
 export type OrderUncheckedUpdateManyWithoutCreatedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1808,6 +1868,7 @@ export type OrderUpdateWithoutAssignedToInput = {
 
 export type OrderUncheckedUpdateWithoutAssignedToInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1831,6 +1892,7 @@ export type OrderUncheckedUpdateWithoutAssignedToInput = {
 
 export type OrderUncheckedUpdateManyWithoutAssignedToInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1873,6 +1935,7 @@ export type OrderUpdateWithoutPreparedByInput = {
 
 export type OrderUncheckedUpdateWithoutPreparedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1896,6 +1959,7 @@ export type OrderUncheckedUpdateWithoutPreparedByInput = {
 
 export type OrderUncheckedUpdateManyWithoutPreparedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1915,6 +1979,7 @@ export type OrderUncheckedUpdateManyWithoutPreparedByInput = {
 
 export type OrderCreateManyCustomerInput = {
   id?: string
+  orderNumber?: number
   customerFullName: string
   customerPhone: string
   deliveryDate: Date | string
@@ -1957,6 +2022,7 @@ export type OrderUpdateWithoutCustomerInput = {
 
 export type OrderUncheckedUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1980,6 +2046,7 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
 
 export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.IntFieldUpdateOperationsInput | number
   customerFullName?: Prisma.StringFieldUpdateOperationsInput | string
   customerPhone?: Prisma.StringFieldUpdateOperationsInput | string
   deliveryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2057,6 +2124,7 @@ export type OrderCountOutputTypeCountStockEventsArgs<ExtArgs extends runtime.Typ
 
 export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  orderNumber?: boolean
   customerFullName?: boolean
   customerPhone?: boolean
   deliveryDate?: boolean
@@ -2088,6 +2156,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 
 export type OrderSelectScalar = {
   id?: boolean
+  orderNumber?: boolean
   customerFullName?: boolean
   customerPhone?: boolean
   deliveryDate?: boolean
@@ -2106,7 +2175,7 @@ export type OrderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerFullName" | "customerPhone" | "deliveryDate" | "deliveryTime" | "orderType" | "deliveryAddress" | "notes" | "amount" | "status" | "customerId" | "createdById" | "assignedToId" | "preparedById" | "prepNotes" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "customerFullName" | "customerPhone" | "deliveryDate" | "deliveryTime" | "orderType" | "deliveryAddress" | "notes" | "amount" | "status" | "customerId" | "createdById" | "assignedToId" | "preparedById" | "prepNotes" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.Order$customerArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -2133,6 +2202,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    orderNumber: number
     customerFullName: string
     customerPhone: string
     deliveryDate: Date
@@ -2527,6 +2597,7 @@ export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Ty
  */
 export interface OrderFieldRefs {
   readonly id: Prisma.FieldRef<"Order", 'String'>
+  readonly orderNumber: Prisma.FieldRef<"Order", 'Int'>
   readonly customerFullName: Prisma.FieldRef<"Order", 'String'>
   readonly customerPhone: Prisma.FieldRef<"Order", 'String'>
   readonly deliveryDate: Prisma.FieldRef<"Order", 'DateTime'>

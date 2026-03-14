@@ -78,6 +78,7 @@ model Customer {
 
 model Order {
   id                String      @id @default(cuid())
+  orderNumber       Int         @unique @default(autoincrement())
   customerFullName  String
   customerPhone     String
   deliveryDate      DateTime

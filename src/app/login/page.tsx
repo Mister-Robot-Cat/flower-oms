@@ -42,24 +42,24 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         {/* Logo and Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#6E1075] shadow-lg mb-4">
-            <span className="text-3xl">🌸</span>
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#6E1075] shadow-lg mb-3 sm:mb-4">
+            <span className="text-3xl sm:text-4xl">🌸</span>
           </div>
-          <h1 className="text-3xl font-display text-[#501257] mb-3 font-semibold">
+          <h1 className="text-3xl sm:text-4xl font-display text-[#501257] mb-2 sm:mb-3 font-semibold">
             COSMIC
           </h1>
-          <p className="text-[#501257] text-lg font-light tracking-wide">Premium Sistem</p>
+          <p className="text-[#501257] text-lg sm:text-xl font-light tracking-wide">Premium Sistem</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#C743DA]/20 p-8 hover:shadow-3xl transition-all duration-500">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-display text-[#501257] mb-2 font-light">Xoş gəlmisiniz</h2>
-            <p className="text-[#631974] text-lg font-light">Hesabınıza daxil olun</p>
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-[#C743DA]/20 p-6 sm:p-8 hover:shadow-3xl transition-all duration-500">
+          <div className="mb-6 sm:mb-8 text-center">
+            <h2 className="text-2xl sm:text-3xl font-display text-[#501257] mb-2 font-light">Xoş gəlmisiniz</h2>
+            <p className="text-[#631974] text-lg sm:text-xl font-light">Hesabınıza daxil olun</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">

@@ -43,3 +43,38 @@ export async function GET(
     return NextResponse.json({ error: "Fayl oxunmadı" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ id: string; photoId: string }> } | { params: { id: string; photoId: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const role = (session.user as any).role as string | undefined;
+  if (role !== "ADMIN" && role !== "FLORIST") {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  }
+
+  const paramsMaybePromise = (context as any).params;
+  const { id: orderId, photoId } =
+    typeof paramsMaybePromise?.then === "function"
+      ? await paramsMaybePromise
+      : paramsMaybePromise || {};
+  if (!orderId || !photoId) return NextResponse.json({ error: "ID tapılmadı" }, { status: 400 });
+
+  const photo = await prisma.orderPhoto.findFirst({ where: { id: photoId, orderId } });
+  if (!photo) return NextResponse.json({ error: "Şəkil tapılmadı" }, { status: 404 });
+
+  // Удаляем файл с диска
+  const fullPath = path.join(uploadsRoot(), photo.filePath);
+  try {
+    await fs.unlink(fullPath);
+  } catch (e) {
+    console.error("Failed to delete file:", e);
+  }
+
+  // Удаляем запись из базы данных
+  await prisma.orderPhoto.delete({ where: { id: photoId } });
+
+  return NextResponse.json({ success: true, message: "Şəkil silindi" });
+}

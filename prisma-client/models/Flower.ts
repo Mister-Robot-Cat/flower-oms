@@ -451,14 +451,6 @@ export type EnumUnitTypeFieldUpdateOperationsInput = {
   set?: $Enums.UnitType
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type FlowerCreateNestedOneWithoutUsagesInput = {
   create?: Prisma.XOR<Prisma.FlowerCreateWithoutUsagesInput, Prisma.FlowerUncheckedCreateWithoutUsagesInput>
   connectOrCreate?: Prisma.FlowerCreateOrConnectWithoutUsagesInput

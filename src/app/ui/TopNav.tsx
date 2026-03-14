@@ -11,12 +11,12 @@ export default async function TopNav() {
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-lg border-b border-[#C743DA]/30 shadow-lg">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 gap-4">
-        <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-3 text-sm font-medium text-[#501257] hover:opacity-90 transition-all duration-300 group">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#6E1075] shadow-md text-xl">
+      <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3 sm:px-4 lg:px-8 gap-2 sm:gap-4">
+        <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-2 sm:gap-3 text-sm font-medium text-[#501257] hover:opacity-90 transition-all duration-300 group flex-shrink-0">
+          <div className="inline-flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl bg-[#6E1075] shadow-md text-lg sm:text-xl">
             🌸
           </div>
-          <span className="font-display text-xl font-medium text-[#501257]">COSMIC</span>
+          <span className="font-display text-base sm:text-xl font-medium text-[#501257] hidden xs:inline">COSMIC</span>
         </Link>
         
         <nav className="hidden gap-2 md:flex text-sm font-medium">
@@ -42,24 +42,26 @@ export default async function TopNav() {
           )}
         </nav>
         
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-2 sm:gap-3 text-sm">
           {session?.user ? (
             <>
-              <div className="hidden sm:flex items-center gap-3">
-                <Link href="/profile" className="text-[#631974] hover:text-[#501257] transition-colors font-medium">
+              <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+                <Link href="/profile" className="text-[#631974] hover:text-[#501257] transition-colors font-medium text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">
                   {name}
                 </Link>
                 {role && (
-                  <span className="inline-flex rounded-lg border border-[#C743DA]/30 bg-[#F3F1F2] px-3 py-1 text-xs font-medium text-[#501257]">
+                  <span className="inline-flex rounded-lg border border-[#C743DA]/30 bg-[#F3F1F2] px-2 sm:px-3 py-1 text-xs font-medium text-[#501257]">
                     {role}
                   </span>
                 )}
               </div>
-              <LogoutButton />
+              <div className="hidden sm:block">
+                <LogoutButton />
+              </div>
               <MobileMenu role={role} isAuthenticated={!!session?.user} />
             </>
           ) : (
-            <Link href="/login" className="px-6 py-2.5 rounded-xl bg-[#6E1075] text-white font-medium shadow-md hover:shadow-lg transition-all duration-200">Daxil ol</Link>
+            <Link href="/login" className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#6E1075] text-white font-medium text-xs sm:text-sm shadow-md hover:shadow-lg transition-all duration-200">Daxil ol</Link>
           )}
         </div>
       </div>

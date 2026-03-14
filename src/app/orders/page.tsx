@@ -222,37 +222,37 @@ export default async function OrdersPage({
 
         {/* Desktop View - Table */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-full text-sm border-t border-space-border">
+          <table className="min-w-full text-base border-t border-space-border">
             <thead className="bg-space-surface-light/40 text-left">
               <tr>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-space-text-secondary">ID</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-space-text-secondary">Müştəri</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-space-text-secondary">Tarix / Vaxt</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-space-text-secondary">Status</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-space-text-secondary">Florist</th>
+                <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">ID</th>
+                <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Müştəri</th>
+                <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Tarix / Vaxt</th>
+                <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Status</th>
+                <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Florist</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-b border-space-border last:border-b-0 hover:bg-space-surface-light/50 transition-colors">
-                  <td className="px-3 py-2 align-top text-xs text-space-text-secondary">
+                  <td className="px-4 py-3 align-top text-sm text-space-text-secondary">
                     <Link
                       href={`/orders/${order.id}`}
-                      className="underline-offset-2 hover:underline"
+                      className="underline-offset-2 hover:underline font-medium"
                     >
                       {order.id.slice(0, 8)}
                     </Link>
                   </td>
-                  <td className="px-3 py-2 align-top text-space-text-primary">{order.customerFullName}</td>
-                  <td className="px-3 py-2 align-top text-space-text-primary">
+                  <td className="px-4 py-3 align-top text-base font-semibold text-space-text-primary">{order.customerFullName}</td>
+                  <td className="px-4 py-3 align-top text-base font-medium text-space-text-primary">
                     {order.deliveryDate.toISOString().slice(0, 10)} {order.deliveryTime}
                   </td>
-                  <td className="px-3 py-2 align-top">
+                  <td className="px-4 py-3 align-top">
                     <Badge variant={statusVariant(order.status)}>
                       {formatStatus(order.status)}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2 align-top text-space-text-primary">
+                  <td className="px-4 py-3 align-top text-base font-medium text-space-text-primary">
                     {order.assignedTo ? order.assignedTo.displayName : "-"}
                   </td>
                 </tr>
