@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Input from "@/app/ui/Input";
 import Button from "@/app/ui/Button";
 import PaymentPanel from "@/components/PaymentPanel";
+import UnpaidCloseDialog from "@/components/UnpaidCloseDialog";
+import { requestStatus } from "@/lib/status-client";
 import { STATUS_LABELS, formatDayMonthAz, type OrderStatusValue } from "@/lib/order-shared";
 
 type UnitType = "STEM" | "BUNCH" | "BOX";
@@ -73,6 +75,7 @@ export default function PrepOrder({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [unpaidDue, setUnpaidDue] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -148,7 +151,7 @@ export default function PrepOrder({
     }
   }
 
-  async function setStatus(status: OrderStatusValue) {
+  async function setStatus(status: OrderStatusValue, closeWithDebt?: boolean) {
     flash(null);
     setStatusLoading(status);
     try {
@@ -157,14 +160,12 @@ export default function PrepOrder({
         setError((e) => `${e ?? "Çiçəklər yadda saxlanmadı"}. Status dəyişmədi.`);
         return;
       }
-      const res = await fetch(`/api/orders/${order.id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, prepNotes }),
-      });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) flash(null, data?.error || "Status dəyişdirilə bilmədi");
-      else {
+      const result = await requestStatus(order.id, { status, prepNotes, closeWithDebt });
+      if (!result.ok) {
+        if (result.unpaidDue !== null) setUnpaidDue(result.unpaidDue);
+        else flash(null, result.error);
+      } else {
+        setUnpaidDue(null);
         flash(usageChanged ? `Çiçəklər yadda saxlandı. Status: ${STATUS_LABELS[status]}` : `Status: ${STATUS_LABELS[status]}`);
         router.refresh();
       }
@@ -451,6 +452,17 @@ export default function PrepOrder({
             </label>
           </div>
         )}
+
+        <UnpaidCloseDialog
+          due={unpaidDue}
+          busy={statusLoading !== null}
+          onPay={() => {
+            setUnpaidDue(null);
+            setShowPaymentModal(true);
+          }}
+          onDebt={() => setStatus("COMPLETED", true)}
+          onCancel={() => setUnpaidDue(null)}
+        />
 
         {showPaymentModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPaymentModal(false)}>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/ui/Button";
+import UnpaidCloseDialog from "@/components/UnpaidCloseDialog";
+import { requestStatus } from "@/lib/status-client";
 
 export default function StatusAction({
   orderId,
@@ -15,37 +17,40 @@ export default function StatusAction({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unpaidDue, setUnpaidDue] = useState<number | null>(null);
   const router = useRouter();
+
+  async function send(closeWithDebt?: boolean) {
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await requestStatus(orderId, { status: nextStatus, closeWithDebt });
+      if (result.ok) {
+        setUnpaidDue(null);
+        router.refresh();
+      } else if (result.unpaidDue !== null) {
+        setUnpaidDue(result.unpaidDue);
+      } else {
+        setError(result.error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
-      <Button
-        disabled={loading}
-        onClick={async () => {
-          setError(null);
-          setLoading(true);
-          try {
-            const res = await fetch(`/api/orders/${orderId}/status`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: nextStatus }),
-            });
-            const data = await res.json().catch(() => null);
-            if (!res.ok) {
-              setError(data?.error || "Əməliyyat alınmadı");
-            } else {
-              router.refresh();
-            }
-          } finally {
-            setLoading(false);
-          }
-        }}
-        variant="accent"
-        size="sm"
-      >
-        {loading ? "Gözləyin..." : label}
+      <Button disabled={loading} onClick={() => send()} variant="accent" size="sm">
+        {loading && unpaidDue === null ? "Gözləyin..." : label}
       </Button>
       {error && <div className="text-xs text-cosmic-red mt-1">{error}</div>}
+      <UnpaidCloseDialog
+        due={unpaidDue}
+        busy={loading}
+        onPay={() => router.push(`/orders/${orderId}#odenis`)}
+        onDebt={() => send(true)}
+        onCancel={() => setUnpaidDue(null)}
+      />
     </>
   );
 }
