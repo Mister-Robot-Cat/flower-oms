@@ -8,6 +8,7 @@ import Button from "@/app/ui/Button";
 import SearchBar from "./ui/SearchBar";
 import OrderCard from "./ui/OrderCard";
 import { dayRange } from "@/lib/dates";
+import { phoneSearchFragment } from "@/lib/customers";
 import { isOrderStatus, paymentSummary, PAYMENT_STATE_LABELS, formatAzn } from "@/lib/orders";
 import type { Prisma } from "../../../prisma-client/client";
 
@@ -79,10 +80,14 @@ export default async function OrdersPage({
   const user = await requirePageUser(["ADMIN", "CALL_CENTER"], "/orders");
   const where: Prisma.OrderWhereInput = {};
 
-  if (params.search) {
+  const search = params.search?.trim().slice(0, 100);
+  if (search) {
+    // Phones are stored as +994XXXXXXXXX; "050 123 45 67" is matched by its digits.
+    const phoneFragment = phoneSearchFragment(search);
     where.OR = [
-      { customerFullName: { contains: params.search } },
-      { customerPhone: { contains: params.search } },
+      { customerFullName: { contains: search } },
+      { customerPhone: { contains: search } },
+      ...(phoneFragment ? [{ customerPhone: { contains: phoneFragment } }] : []),
     ];
   }
 
