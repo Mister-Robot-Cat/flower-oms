@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Input from "@/app/ui/Input";
 import Button from "@/app/ui/Button";
@@ -86,6 +86,14 @@ export default function PrepOrder({
   const initialQty = useMemo(() => new Map(initialUsages.map((u) => [u.flowerId, u.quantity])), [initialUsages]);
   const usageChanged = usages.some((u) => (initialQty.get(u.flowerId) ?? 0) !== u.quantity);
 
+  // Warn before leaving the page with flowers that were counted but not saved.
+  useEffect(() => {
+    if (!usageChanged) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [usageChanged]);
+
   const filteredFlowers = useMemo(() => {
     const q = query.toLowerCase().trim();
     const list = q ? flowers.filter((f) => f.name.toLowerCase().includes(q)) : flowers;
@@ -113,12 +121,13 @@ export default function PrepOrder({
     setError(err);
   }
 
-  async function saveUsage() {
+  /** Saves changed flower quantities. Returns false when the server refused them. */
+  async function saveUsage(): Promise<boolean> {
     flash(null);
     const items = usages
       .filter((u) => (initialQty.get(u.flowerId) ?? 0) !== u.quantity)
       .map((u) => ({ flowerId: u.flowerId, quantity: u.quantity }));
-    if (items.length === 0) return;
+    if (items.length === 0) return true;
     setSavingUsage(true);
     try {
       const res = await fetch(`/api/orders/${order.id}/usage`, {
@@ -127,11 +136,13 @@ export default function PrepOrder({
         body: JSON.stringify({ items }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok) flash(null, data?.error || "Yadda saxlanmadı");
-      else {
-        flash("Çiçəklər yadda saxlandı, anbar yeniləndi");
-        router.refresh();
+      if (!res.ok) {
+        flash(null, data?.error || "Yadda saxlanmadı");
+        return false;
       }
+      flash("Çiçəklər yadda saxlandı, anbar yeniləndi");
+      router.refresh();
+      return true;
     } finally {
       setSavingUsage(false);
     }
@@ -141,6 +152,11 @@ export default function PrepOrder({
     flash(null);
     setStatusLoading(status);
     try {
+      // Counted flowers are saved first, so pressing a status button never loses them.
+      if (usageChanged && !(await saveUsage())) {
+        setError((e) => `${e ?? "Çiçəklər yadda saxlanmadı"}. Status dəyişmədi.`);
+        return;
+      }
       const res = await fetch(`/api/orders/${order.id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -149,7 +165,7 @@ export default function PrepOrder({
       const data = await res.json().catch(() => null);
       if (!res.ok) flash(null, data?.error || "Status dəyişdirilə bilmədi");
       else {
-        flash(`Status: ${STATUS_LABELS[status]}`);
+        flash(usageChanged ? `Çiçəklər yadda saxlandı. Status: ${STATUS_LABELS[status]}` : `Status: ${STATUS_LABELS[status]}`);
         router.refresh();
       }
     } finally {
