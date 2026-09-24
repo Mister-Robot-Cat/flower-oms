@@ -64,7 +64,9 @@ export default function NewOrderForm() {
       return;
     }
 
-    router.push("/orders");
+    // Straight to the new order, so a prepayment can be taken right away.
+    const created = await res.json().catch(() => null);
+    router.push(created?.order?.id ? `/orders/${created.order.id}?created=1` : "/orders");
   }
 
   return (
