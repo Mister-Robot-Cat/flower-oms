@@ -71,7 +71,7 @@ export default async function DashboardPage() {
           <div className="bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl border border-[#C743DA]/20 p-4 sm:p-5 lg:p-6 hover:shadow-2xl transition-all duration-300">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-[#6E1075] flex items-center justify-center text-white shadow-lg">
-                <span className="text-2xl sm:text-3xl">�</span>
+                <span className="text-2xl sm:text-3xl">📦</span>
               </div>
               <div className="text-sm font-semibold text-[#631974] uppercase tracking-wide">Toplam</div>
             </div>

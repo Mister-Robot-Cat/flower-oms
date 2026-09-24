@@ -135,7 +135,7 @@ export default async function OrdersPage({
           <h1 className="text-xl md:text-2xl font-semibold text-space-text-primary font-display">Sifarişlər</h1>
           <Link
             href="/orders/new"
-            className="w-full sm:w-auto inline-flex items-center justify-center rounded-md bg-pink-nebula text-white shadow-glow-pink px-4 py-2.5 md:py-2 text-sm font-medium transition hover:-translate-y-0.5 touch-manipulation"
+            className="w-full sm:w-auto inline-flex items-center justify-center rounded-md bg-cosmic-purple hover:bg-cosmic-purple-light text-white shadow-md px-4 py-2.5 md:py-2 text-sm font-medium transition hover:-translate-y-0.5 touch-manipulation"
           >
             ➕ Yeni sifariş
           </Link>
