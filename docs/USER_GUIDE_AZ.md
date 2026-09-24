@@ -9,6 +9,8 @@ Bu təlimat mağazanın bütün işçiləri üçündür. Hər rol üçün ayrıc
 - [Tez-tez verilən suallar](#tez-tez-verilən-suallar)
 
 > Şəkillər kompüter (1280 px) və telefon (390 px) ekranından götürülüb. Sistem hər ikisində işləyir.
+>
+> Təlimat **1-ci dalğa yeniləmələrindən sonrakı** versiyanı təsvir edir: ödənişin təsdiqi, qalıqlı sifarişin bağlanması, florist lövhəsində filtrlər və «Götür» düyməsi, telefonla müştərinin tanınması.
 
 ---
 
@@ -43,22 +45,23 @@ Operator zəngi qəbul edir, sifarişi yaradır, müştərini tapır, hazır sif
 ![Sifarişlər siyahısı](./screens/02-operator-orders-d.png)
 ![Müştərilər](./screens/04-operator-customers-d.png)
 
-> 💡 Telefonu `+994…` formatında axtarmaq ən etibarlısıdır. Həmçinin nömrənin son 7 rəqəmi ilə də axtara bilərsiniz.
+> 💡 Telefonu istənilən formatda axtara bilərsiniz: `050 123 45 67`, `0501234567`, `+994501234567` və ya son 7 rəqəm.
 
 ### 2. Yeni sifariş yaratmaq
 
 1. **Sifarişlər** → **➕ Yeni sifariş**.
 2. Xanaları doldurun:
-   - **Müştərinin tam adı** və **Telefon nömrəsi**. Telefon avtomatik `+994…` formatına salınır. Bu nömrə ilə müştəri artıq varsa, sifariş onun kartına bağlanır.
+   - Əvvəlcə **Telefon nömrəsi**. İstənilən formatda yazın: `050 123 45 67`, `0501234567`, `+994…`. Nömrə tanışdırsa, sistem **adı və son ünvanı özü doldurur** və «⭐ Daimi müştəri: … sifariş · Ödənilməmiş …» zolağını göstərir. Doldurulmuş xanaları istəsəniz dəyişə bilərsiniz.
+   - **Müştərinin tam adı**. Yeni müştəri üçün əl ilə yazın.
    - **Çatdırılma tarixi** və **vaxtı**. Mağazadan götürmədə müştərinin gələcəyi vaxtı yazın.
    - **Sifariş növü**: *Mağazadan götürmə* və ya *Çatdırılma*.
    - **Məbləğ (AZN)**. Vergül də, nöqtə də olar: `85,50` və ya `85.50`.
    - **Ünvan**. Çatdırılma üçün məcburidir.
    - **Qeyd / xüsusi istəklər**. Alıcının adı və telefonu, açıqcanın mətni, rəng istəyi və s.
    - **Şəkillər**. Müştərinin göndərdiyi nümunə şəkil (5-ə qədər). Florist bu şəkilləri görəcək.
-3. **Sifarişi yarat** düyməsini basın.
+3. **Sifarişi yarat** düyməsini basın. Yaradılmış sifarişin kartı dərhal açılır: «✅ Sifariş #N yaradıldı». Beh (avans) varsa, elə orada ödənişi qeyd edin.
 
-![Yeni sifariş](./screens/06-operator-new-order-filled-d.png)
+![Daimi müştəri](./screens/wave1/1.8/1-after-known-phone-m.png)
 
 > ⚠️ Məcburi xana boş qalarsa, sistem sifarişi yaratmır və xəbərdarlıq edir.
 
@@ -78,14 +81,16 @@ Sifariş kartında **Ödəniş** bölməsində yuxarıda **Məbləğ**, **Ödən
 
 | Düymə | Nə vaxt |
 |---|---|
-| 💵 **Nağd ödəniş (X ₼)** | Müştəri qalığın hamısını nağd ödəyir |
-| 💳 **Kart ilə ödəniş (X ₼)** | Qalığın hamısı kartla (POS) |
+| 💵 **Nağd ödəniş (X ₼)** → **Təsdiqlə** | Müştəri qalığın hamısını nağd ödəyir |
+| 💳 **Kart ilə ödəniş (X ₼)** → **Təsdiqlə** | Qalığın hamısı kartla (POS) |
 | 🔀 **Qarışıq / qismən ödəniş** | Bir hissə nağd, bir hissə kart, və ya yalnız beh (avans) |
 | 📝 **Borc** | Müştəri sonra ödəyəcək. Qeyddə nə vaxt ödəyəcəyini yazın |
 
 ![Qarışıq ödəniş](./screens/21-operator-payment-mixed-d.png)
 
-> ⚠️ **Diqqət:** «Nağd» və «Kart» düymələri bir toxunuşla **bütün qalığı** qeyd edir. Pul əlinizdə olmadan basmayın. Səhv ödənişi yalnız administrator ləğv edə bilər.
+> ✅ «Nağd» və «Kart» düymələri əvvəlcə məbləği göstərir: «💵 Nağd ilə alındı? 85.50 ₼». Pul yalnız **Təsdiqlə** basdıqdan sonra qeyd olunur, **Geri** heç nə yazmır. Səhv ödənişi yalnız administrator ləğv edə bilər.
+>
+> ![Ödənişin təsdiqi](./screens/wave1/1.2/2-after-after-one-tap.png)
 
 Borc sonra ödənildikdə həmin sifarişi açın və nağd və ya kart düyməsi ilə ödənişi qeyd edin.
 
@@ -99,7 +104,12 @@ Borc sonra ödənildikdə həmin sifarişi açın və nağd və ya kart düyməs
 
 ![Zəng mərkəzi](./screens/20-operator-callcenter-d.png)
 
-> ⚠️ **Tamamlandı** basmazdan əvvəl ödənişin tam olduğunu yoxlayın. Qalıq varsa, əvvəlcə ödənişi və ya borcu qeyd edin.
+> Sifarişin qalığı varsa, **Tamamlandı** basanda sistem soruşur:
+> - **💵 Ödənişə keç**: sifarişin ödəniş bölməsi açılır;
+> - **📝 Borc kimi bağla**: sifariş bağlanır, qalıq müştərinin borcu kimi tarixçəyə yazılır;
+> - **Ləğv et**: heç nə dəyişmir.
+>
+> ![Qalıqlı sifariş](./screens/wave1/1.3/1-after-callcenter-complete-unpaid.png)
 
 ---
 
@@ -111,26 +121,29 @@ Florist günün sifarişlərini görür, sifarişi götürür, istifadə etdiyi 
 
 1. Menyuda **Florist** bölməsini açın.
 2. Yuxarıda tarixi seçin. Standart olaraq bu gün seçilir.
-3. Kartın rəngi:
-   - 🔴 **qırmızı**: yeni, hələ heç kim götürməyib;
-   - 🟡 **sarı**: hazırlanır və ya hazırdır;
-   - 🟢 **yaşıl**: göndərilib və ya tamamlanıb.
-4. Kartda vaxt, növ (🏪 Mağaza / 🚚 Çatdırılma), məbləğ, florist və nümunə şəkil var.
+3. Yuxarıda filtrlər var: **Hamısı**, **Mənim** (sizin götürdükləriniz), **Boş** (heç kim götürməyib). Mötərizədə sayları göstərilir.
+4. Kartın rəngi və nişanı statusu göstərir:
+   - 🔴 **Yeni**: hələ heç kim götürməyib;
+   - 🟠 **Hazırlanır**;
+   - 🔵 **Hazır**: müştərini və ya kuryeri gözləyir;
+   - 🟢 **göndərilib və ya tamamlanıb**.
+5. Boş sifarişi götürmək üçün kartın altında **✋ Götür** düyməsini basın. Sifariş sizin adınıza keçir, başqa florist onu dəyişə bilməz.
+6. Lövhə **hər 30 saniyədən bir özü yenilənir**: operatorun yeni sifarişi səhifəni yeniləmədən görünür.
 
-![Florist lövhəsi](./screens/11-florist-board-m.png)
+![Florist lövhəsi](./screens/wave1/1.9/1-after-board-m.png)
 
 ### 2. Sifarişi hazırlamaq
 
 1. Karta basın. Sifarişin bütün məlumatları açılır: tarix, vaxt, müştəri, ünvan, qeyd, nümunə şəkillər.
 2. **🛠️ Hazırlamağa başla** düyməsini basın. Sifariş sizin adınıza keçir və başqa florist onu dəyişə bilməz.
 3. **🌷 İstifadə olunan çiçəklər**: axtarışda çiçəyi tapın, **+** və **−** ilə miqdarı qeyd edin.
-4. **Mütləq «Çiçəkləri yadda saxla» düyməsini basın.** Anbar yalnız bundan sonra azalır.
+4. **Çiçəkləri yadda saxla** düyməsini basın və ya birbaşa status düyməsinə keçin: qeyd etdiyiniz çiçəklər status dəyişəndə **avtomatik yadda saxlanılır** və anbar azalır.
 
 ![Sifarişin hazırlanması](./screens/12-florist-order-m.png)
 
-> ⚠️ **Vacib:** «Çiçəkləri yadda saxla» basmadan **Buket hazırdır** düyməsini bassanız, çiçəklər **yadda qalmır**. Əvvəlcə çiçəkləri saxlayın, sonra statusu dəyişin.
+> ℹ️ Anbarda kifayət qədər çiçək yoxdursa, sistem xəbərdarlıq edir və **status dəyişmir**. Bunu administratora deyin.
 >
-> Anbarda kifayət qədər çiçək yoxdursa, sistem xəbərdarlıq edir. Bunu administratora deyin.
+> Yadda saxlanmamış çiçəklərlə səhifədən çıxmaq istəsəniz, brauzer soruşacaq.
 
 ### 3. Buketin şəkli
 
@@ -165,8 +178,8 @@ Administrator anbarı, işçiləri, hesabatları idarə edir və operator ilə f
 ### 1. Anbar (çiçəklər)
 
 1. Menyu → **Anbar**.
-2. **Yeni çiçək**: ad, vahid (*ədəd*, *dəstə*, *qutu*), ehtiyat, aşağı səviyyə, sonra **Əlavə et**.
-3. Cədvəldə mövcud çiçəyin ehtiyatını dəyişin və **Yenilə** basın. Hər dəyişiklik tarixçədə saxlanır.
+2. **Yeni çiçək**: ad, vahid (*Ədəd*, *Dəstə*, *Qutu*), ehtiyat, aşağı səviyyə, sonra **Əlavə et**. Vahid floristin ekranındakı ilə eynidir.
+3. Mövcud çiçəyin ehtiyatını dəyişin və **Yenilə** basın. Hər dəyişiklik tarixçədə saxlanır. Telefonda hər çiçək ayrıca kartdır, ehtiyatı böyük **−** / **+** düymələri ilə dəyişmək olar.
 4. **Aşağı səviyyə**: ehtiyat bu rəqəmə düşəndə çiçək sarı rənglə və «Aşağı ehtiyat» nişanı ilə göstərilir.
 5. İstifadə olunmayan çiçəyi silməyin, **Aktiv** işarəsini götürün.
 
@@ -197,7 +210,11 @@ Administrator anbarı, işçiləri, hesabatları idarə edir və operator ilə f
 
 ![Performans](./screens/34-admin-performance-d.png)
 
-### 4. Səhv ödənişi ləğv etmək
+### 4. Müştərinin məlumatlarını dəyişmək
+
+**Müştərilər** → müştərini açın → **✏️ Redaktə et**. Ad, telefon, email, **doğum tarixi**, ünvan, qeyd və «Aktiv» dəyişdirilə bilər. Bu nömrə başqa müştəridə varsa, sistem xəbərdarlıq edir. Bu imkan operatorda da var.
+
+### 5. Səhv ödənişi ləğv etmək
 
 Sifariş kartında **Ödəniş tarixçəsi** siyahısında səhv ödənişin yanında **Ləğv et** düyməsini basın. Ləğv tarixçədə kimin etdiyi ilə birlikdə qalır.
 
@@ -213,4 +230,4 @@ Sifariş kartında **Ödəniş tarixçəsi** siyahısında səhv ödənişin yan
 
 **Pulu səhv qeyd etdim.** Administratora deyin. O, ödənişi ləğv edəcək, sonra düzgün ödənişi yenidən qeyd edin.
 
-**Telefonda nəsə ekrana sığmır.** Telefonu üfüqi çevirin və ya kompüterdən istifadə edin, və administratora xəbər verin.
+**Telefonda nəsə ekrana sığmır.** Belə olmamalıdır. Səhifənin adını administratora deyin, müvəqqəti olaraq kompüterdən istifadə edin.
