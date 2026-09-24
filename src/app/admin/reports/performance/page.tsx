@@ -96,7 +96,6 @@ export default async function PerformanceReport({
             <div key={r.id} className="rounded-md border border-space-border p-4 bg-space-surface-light">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-space-text-secondary">{r.id.slice(0, 8)}</div>
                   <div className="text-lg font-semibold text-space-text-primary">{r.name}</div>
                 </div>
                 <div className="text-sm text-space-text-primary">Sifariş sayı: {r.ordersCount}</div>
