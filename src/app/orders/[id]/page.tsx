@@ -8,6 +8,7 @@ import EditOrderForm from "./ui/EditOrderForm";
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ created?: string }>;
 }
 
 const EVENT_LABELS: Record<string, string> = {
@@ -24,8 +25,9 @@ const EVENT_LABELS: Record<string, string> = {
   PAYMENT_CANCELLED: "Ödəniş ləğv edildi",
 };
 
-export default async function OrderDetailPage({ params }: Props) {
+export default async function OrderDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const justCreated = (await searchParams).created === "1";
   const user = await requirePageUser(["ADMIN", "CALL_CENTER"], `/orders/${id}`);
 
   const order = await prisma.order.findUnique({
@@ -81,6 +83,13 @@ export default async function OrderDetailPage({ params }: Props) {
             </Link>
           )}
         </div>
+
+        {justCreated && (
+          <div role="status" className="mb-4 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            ✅ <b>Sifariş #{order.orderNumber} yaradıldı.</b> Beh (avans) varsa,{" "}
+            <a href="#odenis" className="font-semibold underline">ödənişi indi qeyd edin</a>.
+          </div>
+        )}
 
         <EditOrderForm order={clientOrder} allowedStatuses={[...STATUS_TARGETS_BY_ROLE[user.role]]} />
 
