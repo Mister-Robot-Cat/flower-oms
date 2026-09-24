@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Input from "@/app/ui/Input";
 import Badge from "@/app/ui/Badge";
+import { formatDateAz } from "@/lib/order-shared";
 
 interface Customer {
   id: string;
@@ -24,28 +25,28 @@ export default function CustomersList() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // One request per pause in typing, not per keystroke; stale answers are dropped.
   useEffect(() => {
-    fetchCustomers();
-  }, [search]);
-
-  async function fetchCustomers() {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (search) params.append("search", search);
-
-      const res = await fetch(`/api/customers?${params}`);
-      const data = await res.json();
-
-      if (res.ok) {
-        setCustomers(data.customers || []);
+    const ctrl = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (search) params.append("search", search);
+        const res = await fetch(`/api/customers?${params}`, { signal: ctrl.signal });
+        const data = await res.json();
+        if (res.ok) setCustomers(data.customers || []);
+      } catch (error) {
+        if (!ctrl.signal.aborted) console.error("Error fetching customers:", error);
+      } finally {
+        if (!ctrl.signal.aborted) setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+    }, search ? 300 : 0);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [search]);
 
   return (
     <div className="rounded-xl bg-white border border-space-border shadow-sm">
@@ -107,7 +108,7 @@ export default function CustomersList() {
                     </Link>
                     {customer.birthday && (
                       <div className="text-xs text-space-text-secondary mt-0.5">
-                        🎂 {new Date(customer.birthday).toLocaleDateString("az-AZ")}
+                        🎂 {formatDateAz(customer.birthday, "UTC")}
                       </div>
                     )}
                   </td>
@@ -130,7 +131,7 @@ export default function CustomersList() {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-sm text-space-text-secondary">
-                    {new Date(customer.createdAt).toLocaleDateString("az-AZ")}
+                    {formatDateAz(customer.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

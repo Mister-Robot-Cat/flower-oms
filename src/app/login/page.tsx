@@ -2,12 +2,11 @@
 
 import { FormEvent, useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Input from "@/app/ui/Input";
 import Button from "@/app/ui/Button";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +34,7 @@ function LoginForm() {
       if (res?.error) {
         setError("Yanlış istifadəçi adı və ya şifrə");
       }
-    } catch (error) {
+    } catch {
       setLoading(false);
       setError("Giriş zamanı xəta baş verdi");
     }

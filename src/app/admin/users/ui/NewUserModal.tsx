@@ -77,7 +77,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
       });
       router.refresh();
       onClose();
-    } catch (err) {
+    } catch {
       setError("Xəta baş verdi");
       setIsSubmitting(false);
     }

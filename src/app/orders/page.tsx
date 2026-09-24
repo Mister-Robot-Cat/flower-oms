@@ -76,7 +76,7 @@ export default async function OrdersPage({
   searchParams: Promise<{ status?: string; date?: string; time?: string; florist?: string; search?: string }>;
 }) {
   const params = await searchParams;
-  const user = await requirePageUser(["ADMIN", "CALL_CENTER"], "/orders");
+  await requirePageUser(["ADMIN", "CALL_CENTER"], "/orders");
   const where: Prisma.OrderWhereInput = {};
 
   if (params.search) {

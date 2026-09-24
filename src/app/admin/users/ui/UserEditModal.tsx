@@ -92,7 +92,7 @@ export default function UserEditModal({
       // Успех
       onUserUpdated({ ...user, ...data });
       onClose();
-    } catch (err) {
+    } catch {
       setError("Xəta baş verdi");
       setIsSubmitting(false);
     }
