@@ -31,21 +31,21 @@ export default function NewOrderForm() {
   const [photos, setPhotos] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [known, setKnown] = useState<KnownCustomer | null>(null);
+  // Lookup result together with the phone it was made for, so a stale answer is never shown.
+  const [lookup, setLookup] = useState<{ phone: string; customer: KnownCustomer | null } | null>(null);
+  const phoneLongEnough = customerPhone.replace(/D/g, "").length >= 9;
+  const known = phoneLongEnough && lookup?.phone === customerPhone ? lookup.customer : null;
 
   // Recognise a returning customer by phone and fill only the fields still empty.
   useEffect(() => {
-    if (customerPhone.replace(/D/g, "").length < 9) {
-      setKnown(null);
-      return;
-    }
+    if (!phoneLongEnough) return;
     const ctrl = new AbortController();
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/customers/lookup?phone=${encodeURIComponent(customerPhone)}`, { signal: ctrl.signal });
         const data = await res.json().catch(() => null);
         const c: KnownCustomer | null = res.ok ? data?.customer ?? null : null;
-        setKnown(c);
+        setLookup({ phone: customerPhone, customer: c });
         if (!c) return;
         setCustomerFullName((v) => v || c.fullName);
         if (c.lastAddress) setDeliveryAddress((v) => v || c.lastAddress!);
@@ -57,7 +57,7 @@ export default function NewOrderForm() {
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [customerPhone]);
+  }, [customerPhone, phoneLongEnough]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
