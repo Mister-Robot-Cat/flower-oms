@@ -1,11 +1,22 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Input from "@/app/ui/Input";
 import Select from "@/app/ui/Select";
 import Button from "@/app/ui/Button";
 import ImageUpload, { type UploadedImage } from "@/components/ImageUpload";
+import { formatAzn } from "@/lib/order-shared";
+
+type KnownCustomer = {
+  id: string;
+  fullName: string;
+  isActive: boolean;
+  lastAddress: string | null;
+  ordersCount: number;
+  debt: number;
+};
 
 export default function NewOrderForm() {
   const router = useRouter();
@@ -20,6 +31,33 @@ export default function NewOrderForm() {
   const [photos, setPhotos] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Lookup result together with the phone it was made for, so a stale answer is never shown.
+  const [lookup, setLookup] = useState<{ phone: string; customer: KnownCustomer | null } | null>(null);
+  const phoneLongEnough = customerPhone.replace(/D/g, "").length >= 9;
+  const known = phoneLongEnough && lookup?.phone === customerPhone ? lookup.customer : null;
+
+  // Recognise a returning customer by phone and fill only the fields still empty.
+  useEffect(() => {
+    if (!phoneLongEnough) return;
+    const ctrl = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/customers/lookup?phone=${encodeURIComponent(customerPhone)}`, { signal: ctrl.signal });
+        const data = await res.json().catch(() => null);
+        const c: KnownCustomer | null = res.ok ? data?.customer ?? null : null;
+        setLookup({ phone: customerPhone, customer: c });
+        if (!c) return;
+        setCustomerFullName((v) => v || c.fullName);
+        if (c.lastAddress) setDeliveryAddress((v) => v || c.lastAddress!);
+      } catch {
+        // Aborted by the next keystroke, or offline: the form still works by hand.
+      }
+    }, 400);
+    return () => {
+      clearTimeout(timer);
+      ctrl.abort();
+    };
+  }, [customerPhone, phoneLongEnough]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -77,6 +115,20 @@ export default function NewOrderForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">
+                Telefon nömrəsi
+              </label>
+              <Input
+                type="tel"
+                inputMode="tel"
+                autoComplete="off"
+                placeholder="050 123 45 67"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
                 Müştərinin tam adı
               </label>
               <Input
@@ -86,18 +138,19 @@ export default function NewOrderForm() {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Telefon nömrəsi
-              </label>
-              <Input
-                type="text"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                required
-              />
-            </div>
           </div>
+
+          {known && (
+            <div className="rounded-lg border border-cosmic-purple-light/40 bg-purple-50 px-4 py-3 text-sm text-space-text-primary flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="font-semibold">⭐ Daimi müştəri: {known.fullName}</span>
+              <span>{known.ordersCount} sifariş</span>
+              {known.debt > 0 && <span className="font-semibold text-cosmic-red">Ödənilməmiş: {formatAzn(known.debt)}</span>}
+              {!known.isActive && <span className="text-cosmic-orange">Deaktiv müştəri</span>}
+              <Link href={`/customers/${known.id}`} target="_blank" className="ml-auto text-cosmic-purple underline">
+                Kart →
+              </Link>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
