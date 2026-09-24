@@ -71,7 +71,20 @@ export default async function CustomerProfilePage({ params }: Props) {
                 )}
               </div>
             </div>
-            <CustomerEditButton customer={customer} />
+            <CustomerEditButton
+              customer={{
+                // Only plain fields: the loaded orders carry Decimal amounts,
+                // which cannot be passed to a client component.
+                id: customer.id,
+                fullName: customer.fullName,
+                phone: customer.phone,
+                email: customer.email,
+                address: customer.address,
+                birthday: customer.birthday,
+                notes: customer.notes,
+                isActive: customer.isActive,
+              }}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
