@@ -98,15 +98,16 @@
   --color-brand-primary-hover: var(--color-brand-700);
   --color-brand-primary-light: var(--color-brand-400);
 
-  /* Shop brand (same values as the Button component). */
+  /* Shop brand (same values as the Button component). The *-light shades are
+     used as text/hover colours, so they must stay readable on white. */
   --color-cosmic-purple: #6E1075;
   --color-cosmic-purple-light: #C743DA;
   --color-cosmic-red: #B91C1C;
-  --color-cosmic-red-light: #FEE2E2;
+  --color-cosmic-red-light: #EF4444;
   --color-cosmic-green: #047857;
-  --color-cosmic-green-light: #D1FAE5;
-  --color-cosmic-orange: #C2410C;
-  --color-cosmic-orange-light: #FFEDD5;
+  --color-cosmic-green-light: #10B981;
+  --color-cosmic-orange: #EA580C;
+  --color-cosmic-orange-light: #C2410C;
 }
 
 @layer base {
