@@ -75,20 +75,20 @@ export default async function PerformanceReport({
   }
 
   return (
-    <div className="min-h-screen bg-cosmic-gradient py-8">
-      <div className="mx-auto max-w-5xl rounded-xl bg-space-surface p-6 shadow-xl border border-space-border">
+    <div className="min-h-screen bg-cosmic-gradient py-6 sm:py-8 px-3">
+      <div className="mx-auto max-w-5xl rounded-xl bg-space-surface p-4 sm:p-6 shadow-xl border border-space-border">
         <h1 className="text-2xl font-semibold mb-4 font-display text-space-text-primary">Florist performansı</h1>
 
-        <form className="mb-4 flex gap-3 items-end">
-          <div>
+        <form className="mb-4 grid grid-cols-2 gap-3 items-end sm:flex sm:flex-wrap">
+          <div className="min-w-0">
             <label className="block text-sm mb-1 text-space-text-secondary">Başlanğıc</label>
-            <Input type="date" name="start" defaultValue={toDateOnly(start)} />
+            <Input type="date" name="start" className="w-full min-w-0" defaultValue={toDateOnly(start)} />
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="block text-sm mb-1 text-space-text-secondary">Son</label>
-            <Input type="date" name="end" defaultValue={toDateOnly(end)} />
+            <Input type="date" name="end" className="w-full min-w-0" defaultValue={toDateOnly(end)} />
           </div>
-          <Button type="submit" variant="accent" size="sm">Göstər</Button>
+          <Button type="submit" variant="accent" size="sm" className="w-full sm:w-auto">Göstər</Button>
         </form>
 
         <div className="space-y-4">

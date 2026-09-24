@@ -74,8 +74,8 @@ export default function NewFlowerForm() {
               )
             }
           >
-            <option value="STEM">Dəstə</option>
-            <option value="BUNCH">Buket</option>
+            <option value="STEM">Ədəd</option>
+            <option value="BUNCH">Dəstə</option>
             <option value="BOX">Qutu</option>
           </Select>
         </div>
