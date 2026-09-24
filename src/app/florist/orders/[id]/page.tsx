@@ -1,6 +1,5 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import PrepOrder from "./ui/PrepOrder";
 
@@ -10,12 +9,7 @@ interface Props {
 
 export default async function FloristOrderPage({ params }: Props) {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user) redirect(`/login?callbackUrl=/florist/orders/${id ?? ""}`);
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "FLORIST" && role !== "ADMIN") redirect("/dashboard");
-
-  if (!id) redirect("/florist");
+  const user = await requirePageUser(["FLORIST", "ADMIN"], `/florist/orders/${id}`);
 
   const [order, flowers, photos] = await Promise.all([
     prisma.order.findUnique({
@@ -33,49 +27,45 @@ export default async function FloristOrderPage({ params }: Props) {
     prisma.orderPhoto.findMany({
       where: { orderId: id },
       orderBy: { createdAt: "desc" },
-      select: { 
-        id: true, 
-        fileName: true, 
-        filePath: true,
-        uploader: {
-          select: {
-            id: true,
-            role: true,
-          }
-        }
-      },
+      select: { id: true, fileName: true, uploaderId: true, uploader: { select: { role: true } } },
     }),
   ]);
-  
+
   if (!order) redirect("/florist");
-
-  const clientOrder = {
-    id: order.id,
-    customerFullName: order.customerFullName,
-    customerPhone: order.customerPhone,
-    deliveryDate: order.deliveryDate.toISOString(),
-    deliveryTime: order.deliveryTime,
-    deliveryAddress: order.deliveryAddress,
-    orderType: order.orderType,
-    amount: order.amount.toString(),
-    status: order.status,
-    assignedToId: order.assignedToId,
-    assignedToName: order.assignedTo?.displayName ?? null,
-  };
-
-  const initialUsages = order.flowerUsages.map((u) => ({
-    flowerId: u.flowerId,
-    flowerName: u.flower.name,
-    unitType: u.flower.unitType,
-    quantity: u.quantity,
-  }));
 
   return (
     <PrepOrder
-      order={clientOrder}
-      flowers={flowers as any}
-      initialUsages={initialUsages}
-      photos={photos}
+      order={{
+        id: order.id,
+        orderNumber: order.orderNumber,
+        customerFullName: order.customerFullName,
+        customerPhone: order.customerPhone,
+        deliveryDate: order.deliveryDate.toISOString(),
+        deliveryTime: order.deliveryTime,
+        deliveryAddress: order.deliveryAddress,
+        orderType: order.orderType,
+        notes: order.notes,
+        prepNotes: order.prepNotes,
+        amount: order.amount.toString(),
+        status: order.status,
+        assignedToId: order.assignedToId,
+        assignedToName: order.assignedTo?.displayName ?? null,
+      }}
+      currentUser={{ id: user.id, role: user.role }}
+      flowers={flowers}
+      initialUsages={order.flowerUsages.map((u) => ({
+        flowerId: u.flowerId,
+        flowerName: u.flower.name,
+        unitType: u.flower.unitType,
+        quantity: u.quantity,
+      }))}
+      photos={photos.map((p) => ({
+        id: p.id,
+        fileName: p.fileName,
+        url: `/api/orders/${order.id}/photos/${p.id}`,
+        uploaderId: p.uploaderId,
+        uploaderRole: p.uploader.role,
+      }))}
     />
   );
 }

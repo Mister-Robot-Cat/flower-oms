@@ -1,80 +1,55 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { promises as fs } from "fs";
-import path from "path";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireApiUser, jsonError } from "@/lib/session";
+import { deleteStoredPhoto, detectImage, imageResponse, storedPhotoPath } from "@/lib/files";
 
-function uploadsRoot() {
-  return path.join(process.cwd(), "uploads");
-}
+type Ctx = { params: Promise<{ id: string; photoId: string }> };
 
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ id: string; photoId: string }> } | { params: { id: string; photoId: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN" && role !== "CALL_CENTER" && role !== "FLORIST") {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
-  const paramsMaybePromise = (context as any).params;
-  const { id: orderId, photoId } =
-    typeof paramsMaybePromise?.then === "function"
-      ? await paramsMaybePromise
-      : paramsMaybePromise || {};
-  if (!orderId || !photoId) return NextResponse.json({ error: "ID tapılmadı" }, { status: 400 });
+export async function GET(req: NextRequest, { params }: Ctx) {
+  const auth = await requireApiUser(["ADMIN", "CALL_CENTER", "FLORIST"]);
+  if (auth.response) return auth.response;
+  const { id: orderId, photoId } = await params;
 
   const photo = await prisma.orderPhoto.findFirst({ where: { id: photoId, orderId } });
-  if (!photo) return NextResponse.json({ error: "Şəkil tapılmadı" }, { status: 404 });
+  if (!photo) return jsonError("Şəkil tapılmadı", 404);
 
-  const fullPath = path.join(uploadsRoot(), photo.filePath);
+  // Only files inside the uploads folder can ever be read.
+  const fullPath = storedPhotoPath(photo.filePath);
+  if (!fullPath) return jsonError("Şəkil tapılmadı", 404);
+
   try {
     const buf = await fs.readFile(fullPath);
-    const headers = new Headers();
-    headers.set("Content-Type", photo.mimeType || "application/octet-stream");
-    if (req.nextUrl.searchParams.get("dl") === "1") {
-      headers.set("Content-Disposition", `attachment; filename="${photo.fileName}"`);
-    }
-    return new NextResponse(buf, { status: 200, headers });
-  } catch (e) {
-    return NextResponse.json({ error: "Fayl oxunmadı" }, { status: 500 });
+    const kind = detectImage(buf);
+    if (!kind) return jsonError("Şəkil tapılmadı", 404);
+    return imageResponse(buf, kind.mime, {
+      download: req.nextUrl.searchParams.get("dl") === "1",
+      fileName: photo.fileName,
+    });
+  } catch {
+    return jsonError("Fayl oxunmadı", 404);
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  context: { params: Promise<{ id: string; photoId: string }> } | { params: { id: string; photoId: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN" && role !== "FLORIST") {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
-  const paramsMaybePromise = (context as any).params;
-  const { id: orderId, photoId } =
-    typeof paramsMaybePromise?.then === "function"
-      ? await paramsMaybePromise
-      : paramsMaybePromise || {};
-  if (!orderId || !photoId) return NextResponse.json({ error: "ID tapılmadı" }, { status: 400 });
+export async function DELETE(_req: NextRequest, { params }: Ctx) {
+  const auth = await requireApiUser(["ADMIN", "FLORIST"]);
+  if (auth.response) return auth.response;
+  const { user } = auth;
+  const { id: orderId, photoId } = await params;
 
   const photo = await prisma.orderPhoto.findFirst({ where: { id: photoId, orderId } });
-  if (!photo) return NextResponse.json({ error: "Şəkil tapılmadı" }, { status: 404 });
+  if (!photo) return jsonError("Şəkil tapılmadı", 404);
 
-  // Удаляем файл с диска
-  const fullPath = path.join(uploadsRoot(), photo.filePath);
-  try {
-    await fs.unlink(fullPath);
-  } catch (e) {
-    console.error("Failed to delete file:", e);
+  // Florists may only delete photos they uploaded themselves.
+  if (user.role === "FLORIST" && photo.uploaderId !== user.id) {
+    return jsonError("Yalnız öz yüklədiyiniz şəkli silə bilərsiniz", 403);
   }
 
-  // Удаляем запись из базы данных
   await prisma.orderPhoto.delete({ where: { id: photoId } });
+  await deleteStoredPhoto(photo.filePath);
+  await prisma.orderEvent.create({
+    data: { orderId, userId: user.id, type: "PHOTO_DELETED", message: photo.fileName },
+  });
 
   return NextResponse.json({ success: true, message: "Şəkil silindi" });
 }

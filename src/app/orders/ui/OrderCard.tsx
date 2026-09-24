@@ -18,7 +18,10 @@ type BadgeVariant =
 interface OrderCardProps {
   order: {
     id: string;
+    orderNumber: number;
     customerFullName: string;
+    paymentLabel: string;
+    paymentPaid: boolean;
     deliveryDate: string;
     deliveryTime: string;
     status: string;
@@ -36,7 +39,7 @@ export default function OrderCard({ order }: OrderCardProps) {
     >
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1">
-          <div className="text-sm text-space-text-secondary mb-1">#{order.id.slice(0, 8)}</div>
+          <div className="text-sm text-space-text-secondary mb-1">#{order.orderNumber}</div>
           <div className="font-semibold text-lg text-space-text-primary">{order.customerFullName}</div>
         </div>
         <Badge variant={order.badgeVariant}>
@@ -48,6 +51,10 @@ export default function OrderCard({ order }: OrderCardProps) {
         <div className="flex items-center gap-2 text-space-text-secondary">
           <span className="text-lg">📅</span>
           <span className="font-medium">{order.deliveryDate} {order.deliveryTime}</span>
+        </div>
+        <div className={`flex items-center gap-2 ${order.paymentPaid ? "text-emerald-700" : "text-red-700"}`}>
+          <span className="text-lg">💰</span>
+          <span className="font-medium">{order.paymentLabel}</span>
         </div>
         {order.assignedTo && (
           <div className="flex items-center gap-2 text-space-text-secondary">

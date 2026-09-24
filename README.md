@@ -32,7 +32,8 @@ Peşəkar çiçək mağazaları üçün tam funksional sifariş idarəetmə sist
 - Çiçək anbarı idarəetməsi
 - Sifariş şəkilləri yükləmə
 - Tarixçə və audit log
-- CSV formatında data eksport
+- CSV (Excel) formatında data eksport
+- Ödənişlər: nağd, kart, qarışıq, borc
 - İstifadəçi profili və statistika
 
 ## 🚀 Quraşdırma
@@ -42,40 +43,32 @@ Peşəkar çiçək mağazaları üçün tam funksional sifariş idarəetmə sist
 ### Sürətli Başlanğıc
 
 ```bash
-# 1. Asılılıqları quraşdırın
-npm install
-
-# 2. .env faylını konfiqurasiya edin
-DATABASE_URL="mysql://root:password@localhost:3306/flower_oms"
-NEXTAUTH_SECRET="your-secret-key"
-
-# 3. Bazanı hazırlayın
-npx prisma generate
-npx prisma db push
-
-# 4. Test məlumatları əlavə edin
-npx tsx scripts/seed-users.ts
-npx tsx scripts/seed-test-orders.ts
-
-# 5. Serveri işə salın
-npm run dev-webpack
+npm install                       # asılılıqlar + Prisma client
+cp .env.example .env              # DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL
+npm run db:migrate                # cədvəlləri yarat
+npm run db:admin -- admin "Admin" # ilk administrator (şifrə ekranda göstərilir)
+npm run dev
 ```
 
-## 🔐 Test Hesabları
+## 🔐 Hesablar
 
-| Rol | İstifadəçi | Şifrə |
-|-----|-----------|-------|
-| Admin | `admin` | `password123` |
-| Operator | `operator1` | `password123` |
-| Florist | `florist1` | `password123` |
+Standart şifrələr **yoxdur**. İlk administratoru `npm run db:admin` yaradır, qalan istifadəçiləri admin
+"İstifadəçilər" bölməsindən əlavə edir. Yerli test üçün `npm run db:seed-demo` demo istifadəçilər yaradır.
+
+## 🛡️ Təhlükəsizlik
+
+- Şəkillər `uploads/` qovluğunda saxlanılır və yalnız daxil olmuş işçilərə API vasitəsilə göstərilir
+- Yalnız həqiqi JPG/PNG/WEBP/GIF faylları qəbul olunur (faylın məzmunu yoxlanılır)
+- Deaktiv edilmiş istifadəçi dərhal sistemdən çıxarılır
+- Florist yalnız özünə təyin edilmiş sifarişlər üzərində işləyə bilər
+- Girişdə şifrə sınaqlarına limit, təhlükəsiz yönləndirmə, təhlükəsizlik başlıqları
 
 ## 🛠️ Texnologiyalar
 
 - **Framework**: Next.js 16.1.1 (App Router)
 - **UI**: React 19, TailwindCSS 4
-- **Database**: MySQL + Prisma ORM
+- **Database**: MySQL / MariaDB + Prisma ORM (driver adapter, native binary olmadan)
 - **Auth**: NextAuth.js + bcryptjs
-- **Real-time**: Socket.io
 - **Validation**: Zod
 - **Language**: TypeScript
 
@@ -109,43 +102,26 @@ Layihə müasir "Cosmic" teması ilə dizayn edilib:
 ## 📝 Əsas Skriptlər
 
 ```bash
-npm run dev-webpack    # Development server (Turbopack olmadan)
-npm run build          # Production build
-npm run start          # Production server
-npm run lint           # ESLint yoxlama
-npx prisma studio      # Database UI
+npm run dev                 # Development server
+npm run build && npm start  # Production
+npm run typecheck           # TypeScript yoxlaması
+npm run lint                # ESLint
+npm run db:migrate          # Miqrasiyalar
+npm run db:admin            # Admin yarat / şifrəni sıfırla
+npm run db:link-customers   # Köhnə sifarişləri müştərilərə bağla (yeniləmədən sonra bir dəfə)
+npx prisma studio           # Database UI
 ```
 
-## 🔧 Konfiqurasiya
-
-### Environment Variables
-
-```env
-DATABASE_URL="mysql://user:pass@host:port/db"
-NEXTAUTH_SECRET="random-secret-key"
-NEXTAUTH_URL="http://localhost:3000"
-```
-
-### Prisma
-
-```bash
-npx prisma generate    # Client yaratmaq
-npx prisma db push     # Schema sinxronlaşdırmaq
-npx prisma studio      # UI açmaq
-```
-
-## 🐛 Məlum Problemlər
-
-1. **Turbopack Access Denied** - PowerShell-i admin kimi açın və ya `npm run dev-webpack` istifadə edin
-2. **Port məşğul** - `Get-Process -Name node | Stop-Process -Force`
-3. **Prisma .env oxumur** - Environment variable əl ilə təyin edin
+Ətraflı quraşdırma və köhnə versiyadan yeniləmə: [SETUP.md](./SETUP.md).
 
 ## 🚀 Gələcək Təkmilləşdirmələr
 
 - [ ] SMS bildirişləri
 - [ ] Email avtomatlaşdırması
 - [ ] Mobil tətbiq
-- [ ] Ödəniş inteqrasiyası
+- [x] Ödənişlərin qeydiyyatı (nağd / kart / qarışıq / borc)
+- [ ] Onlayn ödəniş inteqrasiyası
+- [ ] WhatsApp bildirişləri
 - [ ] QR kod sifariş izləmə
 - [ ] Çoxdilli dəstək
 

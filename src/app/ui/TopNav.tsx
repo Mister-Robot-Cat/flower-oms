@@ -1,18 +1,18 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/session";
 import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 import MobileMenu from "@/components/MobileMenu";
 
 export default async function TopNav() {
-  const session = await getServerSession(authOptions);
-  const role = (session?.user as any)?.role as string | undefined;
-  const name = (session?.user as any)?.displayName || (session?.user as any)?.name || "";
+  const user = await getCurrentUser();
+  const role = user?.role;
+  const name = user?.displayName ?? "";
+  const roleLabel: Record<string, string> = { ADMIN: "Admin", CALL_CENTER: "Operator", FLORIST: "Florist" };
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-lg border-b border-[#C743DA]/30 shadow-lg">
       <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3 sm:px-4 lg:px-8 gap-2 sm:gap-4">
-        <Link href={session?.user ? "/dashboard" : "/login"} className="flex items-center gap-2 sm:gap-3 text-sm font-medium text-[#501257] hover:opacity-90 transition-all duration-300 group flex-shrink-0">
+        <Link href={user ? "/dashboard" : "/login"} className="flex items-center gap-2 sm:gap-3 text-sm font-medium text-[#501257] hover:opacity-90 transition-all duration-300 group flex-shrink-0">
           <div className="inline-flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl bg-[#6E1075] shadow-md text-lg sm:text-xl">
             🌸
           </div>
@@ -43,7 +43,7 @@ export default async function TopNav() {
         </nav>
         
         <div className="flex items-center gap-2 sm:gap-3 text-sm">
-          {session?.user ? (
+          {user ? (
             <>
               <div className="hidden sm:flex items-center gap-2 sm:gap-3">
                 <Link href="/profile" className="text-[#631974] hover:text-[#501257] transition-colors font-medium text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">
@@ -51,14 +51,14 @@ export default async function TopNav() {
                 </Link>
                 {role && (
                   <span className="inline-flex rounded-lg border border-[#C743DA]/30 bg-[#F3F1F2] px-2 sm:px-3 py-1 text-xs font-medium text-[#501257]">
-                    {role}
+                    {roleLabel[role] ?? role}
                   </span>
                 )}
               </div>
               <div className="hidden sm:block">
                 <LogoutButton />
               </div>
-              <MobileMenu role={role} isAuthenticated={!!session?.user} />
+              <MobileMenu role={role} isAuthenticated={!!user} />
             </>
           ) : (
             <Link href="/login" className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#6E1075] text-white font-medium text-xs sm:text-sm shadow-md hover:shadow-lg transition-all duration-200">Daxil ol</Link>

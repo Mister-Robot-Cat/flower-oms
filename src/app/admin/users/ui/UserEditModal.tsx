@@ -58,15 +58,15 @@ export default function UserEditModal({
       return;
     }
 
-    if (formData.password && formData.password.length < 6) {
-      setError("Şifrə ən azı 6 simvol olmalıdır");
+    if (formData.password && formData.password.length < 8) {
+      setError("Şifrə ən azı 8 simvol olmalıdır");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const updateData: any = {
+      const updateData: { displayName: string; role: string; password?: string } = {
         displayName: formData.displayName,
         role: formData.role,
       };

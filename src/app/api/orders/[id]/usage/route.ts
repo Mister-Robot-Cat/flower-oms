@@ -1,120 +1,93 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { requireApiUser, jsonError } from "@/lib/session";
+import { getOrderForWrite } from "@/lib/orders";
 
 const usageSchema = z.object({
   items: z
     .array(
       z.object({
-        flowerId: z.string().min(1),
-        quantity: z.number().int().nonnegative(),
-      })
+        flowerId: z.string().min(1).max(191),
+        quantity: z.number().int().nonnegative().max(100_000),
+      }),
     )
-    .min(1),
+    .min(1)
+    .max(200),
 });
 
-export async function POST(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> } | { params: { id: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "FLORIST" && role !== "ADMIN") {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
+class StockError extends Error {}
+
+// Saves which flowers (and how many) were used for an order and adjusts stock.
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireApiUser(["FLORIST", "ADMIN"]);
+  if (auth.response) return auth.response;
+  const { user } = auth;
+  const { id: orderId } = await params;
 
   const json = await req.json().catch(() => null);
   const parsed = usageSchema.safeParse(json);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Validation error" }, { status: 400 });
-  }
+  if (!parsed.success) return jsonError("Məlumatlar düzgün deyil", 400);
 
-  const paramsMaybePromise = (context as any).params;
-  const { id: orderId } =
-    typeof paramsMaybePromise?.then === "function"
-      ? await paramsMaybePromise
-      : paramsMaybePromise || {};
-  if (!orderId) {
-    return NextResponse.json({ error: "Sifariş ID-si tapılmadı" }, { status: 400 });
-  }
+  const ids = parsed.data.items.map((i) => i.flowerId);
+  if (new Set(ids).size !== ids.length) return jsonError("Eyni çiçək iki dəfə göndərilib", 400);
 
-  const username = (session.user as any).username as string | undefined;
-  const currentUser = username
-    ? await prisma.user.findUnique({ where: { username } })
-    : null;
-  if (!currentUser) {
-    return NextResponse.json({ error: "İstifadəçi tapılmadı" }, { status: 400 });
-  }
+  const access = await getOrderForWrite(orderId, user);
+  if (!access.ok) return jsonError(access.error, access.status);
 
   try {
-    const existingOrder = await prisma.order.findUnique({ where: { id: orderId } });
-    if (!existingOrder) {
-      return NextResponse.json({ error: "Sifariş tapılmadı" }, { status: 404 });
-    }
-
-    const result = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       for (const item of parsed.data.items) {
         const flower = await tx.flower.findUnique({ where: { id: item.flowerId } });
-        if (!flower) throw new Error("Flower not found");
+        if (!flower) throw new StockError("Çiçək tapılmadı");
 
         const existingUsage = await tx.orderFlowerUsage.findUnique({
           where: { orderId_flowerId: { orderId, flowerId: item.flowerId } },
         });
+        const deltaQty = item.quantity - (existingUsage?.quantity ?? 0); // + uses more stock
 
-        const currentQty = existingUsage?.quantity ?? 0;
-        const newQty = item.quantity;
-        const deltaQty = newQty - currentQty; // positive = use more, negative = reduce usage
-
-        if (deltaQty !== 0) {
-          // adjust stock opposite to deltaQty (using more reduces stock)
-          await tx.flower.update({
-            where: { id: item.flowerId },
+        if (deltaQty > 0) {
+          // Only take from stock if there is enough (checked atomically).
+          const res = await tx.flower.updateMany({
+            where: { id: item.flowerId, stockQuantity: { gte: deltaQty } },
             data: { stockQuantity: { decrement: deltaQty } },
           });
-
-          await tx.stockEvent.create({
-            data: {
-              flowerId: item.flowerId,
-              userId: currentUser.id,
-              orderId: orderId,
-              delta: -deltaQty,
-              reason: "order_usage_update",
-            },
+          if (res.count === 0) {
+            throw new StockError(`Anbarda kifayət qədər "${flower.name}" yoxdur (qalıq: ${flower.stockQuantity})`);
+          }
+        } else if (deltaQty < 0) {
+          await tx.flower.update({
+            where: { id: item.flowerId },
+            data: { stockQuantity: { increment: -deltaQty } },
           });
         }
 
-        await tx.orderFlowerUsage.upsert({
-          where: { orderId_flowerId: { orderId, flowerId: item.flowerId } },
-          create: {
-            orderId,
-            flowerId: item.flowerId,
-            quantity: newQty,
-            unitType: flower.unitType,
-          },
-          update: { quantity: newQty },
-        });
+        if (deltaQty !== 0) {
+          await tx.stockEvent.create({
+            data: { flowerId: item.flowerId, userId: user.id, orderId, delta: -deltaQty, reason: "order_usage_update" },
+          });
+        }
+
+        if (item.quantity === 0) {
+          if (existingUsage) await tx.orderFlowerUsage.delete({ where: { id: existingUsage.id } });
+        } else {
+          await tx.orderFlowerUsage.upsert({
+            where: { orderId_flowerId: { orderId, flowerId: item.flowerId } },
+            create: { orderId, flowerId: item.flowerId, quantity: item.quantity, unitType: flower.unitType },
+            update: { quantity: item.quantity },
+          });
+        }
       }
 
       await tx.orderEvent.create({
-        data: {
-          orderId,
-          userId: currentUser.id,
-          type: "ORDER_USAGE_UPDATED",
-          message: "İstifadə olunan çiçəklər yeniləndi",
-        },
+        data: { orderId, userId: user.id, type: "ORDER_USAGE_UPDATED", message: "İstifadə olunan çiçəklər yeniləndi" },
       });
-
-      return true;
     });
 
-    return NextResponse.json({ ok: result }, { status: 200 });
+    return NextResponse.json({ ok: true }, { status: 200 });
   } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    if (e instanceof StockError) return jsonError(e.message, 409);
+    console.error("Usage update failed", e);
+    return jsonError("Yadda saxlamaq mümkün olmadı", 500);
   }
 }

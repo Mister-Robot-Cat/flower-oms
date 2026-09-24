@@ -6,7 +6,7 @@ import TopNav from "./ui/TopNav";
 
 const clother = Inter({
   variable: "--font-clother",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext", "cyrillic"],
   weight: ["400", "500", "600"],
   display: "swap",
 });

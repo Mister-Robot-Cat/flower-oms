@@ -1,76 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { requireApiUser, jsonError } from "@/lib/session";
+import { changeOrderStatus, getOrderForWrite } from "@/lib/orders";
 
 const readySchema = z.object({
-  prepNotes: z.string().optional(),
+  prepNotes: z.string().trim().max(5000).optional(),
 });
 
-export async function POST(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> } | { params: { id: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "FLORIST" && role !== "ADMIN") {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
+// Shortcut: mark an order as READY (same rules as the status endpoint).
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireApiUser(["FLORIST", "ADMIN"]);
+  if (auth.response) return auth.response;
+  const { user } = auth;
+  const { id } = await params;
 
   const json = await req.json().catch(() => null);
   const parsed = readySchema.safeParse(json ?? {});
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Validation error" }, { status: 400 });
-  }
+  if (!parsed.success) return jsonError("Məlumatlar düzgün deyil", 400);
 
-  const paramsMaybePromise = (context as any).params;
-  const { id } =
-    typeof paramsMaybePromise?.then === "function"
-      ? await paramsMaybePromise
-      : paramsMaybePromise || {};
-  if (!id) {
-    return NextResponse.json({ error: "Sifariş ID-si tapılmadı" }, { status: 400 });
-  }
-
-  const username = (session.user as any).username as string | undefined;
-  const currentUser = username
-    ? await prisma.user.findUnique({ where: { username } })
-    : null;
-  if (!currentUser) {
-    return NextResponse.json({ error: "İstifadəçi tapılmadı" }, { status: 400 });
-  }
+  const access = await getOrderForWrite(id, user);
+  if (!access.ok) return jsonError(access.error, access.status);
 
   try {
-    const existing = await prisma.order.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: "Sifariş tapılmadı" }, { status: 404 });
-    }
-
-    const updated = await prisma.order.update({
-      where: { id },
-      data: {
-        status: "READY",
-        preparedBy: { connect: { id: currentUser.id } },
-        prepNotes: parsed.data.prepNotes ?? null,
-      },
-    });
-
-    await prisma.orderEvent.create({
-      data: {
-        orderId: id,
-        userId: currentUser.id,
-        type: "ORDER_READY",
-        to: "READY" as any,
-        message: parsed.data.prepNotes || undefined,
-      },
-    });
-
+    const updated = await changeOrderStatus(access.order, "READY", user, parsed.data.prepNotes);
     return NextResponse.json({ order: updated }, { status: 200 });
   } catch (e) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Ready failed", e);
+    return jsonError("Status dəyişdirilə bilmədi", 500);
   }
 }

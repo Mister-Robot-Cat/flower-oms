@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Input from "@/app/ui/Input";
 import Select from "@/app/ui/Select";
 import Button from "@/app/ui/Button";
-import ImageUpload from "@/components/ImageUpload";
+import ImageUpload, { type UploadedImage } from "@/components/ImageUpload";
 
 export default function NewOrderForm() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function NewOrderForm() {
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [amount, setAmount] = useState("");
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +50,7 @@ export default function NewOrderForm() {
         deliveryAddress: deliveryAddress || undefined,
         notes: notes || undefined,
         amount: amountNumber,
-        photoUrls,
+        photoIds: photos.map((p) => p.id),
       }),
     });
 
@@ -58,7 +58,9 @@ export default function NewOrderForm() {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Sifarişi yaratmaq mümkün olmadı");
+      const fieldErrors = data?.details?.fieldErrors as Record<string, string[]> | undefined;
+      const firstField = fieldErrors ? Object.values(fieldErrors).flat()[0] : undefined;
+      setError(firstField || data?.error || "Sifarişi yaratmaq mümkün olmadı");
       return;
     }
 
@@ -178,9 +180,9 @@ export default function NewOrderForm() {
               Florist sifarişi hazırlayarkən bu şəkilləri görəcək
             </p>
             <ImageUpload
-              onImageUploaded={(url) => setPhotoUrls([...photoUrls, url])}
-              existingImages={photoUrls}
-              onImageRemoved={(url) => setPhotoUrls(photoUrls.filter((u) => u !== url))}
+              onImageUploaded={(img) => setPhotos((prev) => [...prev, img])}
+              existingImages={photos}
+              onImageRemoved={(id) => setPhotos((prev) => prev.filter((p) => p.id !== id))}
               maxImages={5}
             />
           </div>

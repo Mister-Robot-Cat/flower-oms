@@ -1,18 +1,17 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import Input from "@/app/ui/Input";
 import Button from "@/app/ui/Button";
+import { addDays, parseDateOnly, toDateOnly, todayISO } from "@/lib/dates";
+import { paymentSummary } from "@/lib/orders";
 
-function parseRange(params: Promise<{ start?: string; end?: string }>) {
-  return params.then((p) => {
-    const end = p.end ? new Date(p.end) : new Date();
-    const start = p.start ? new Date(p.start) : new Date(end.getTime() - 29 * 24 * 3600 * 1000);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
-    return { start, end };
-  });
+async function parseRange(params: Promise<{ start?: string; end?: string }>) {
+  const p = await params;
+  const end = parseDateOnly(p.end) ?? parseDateOnly(todayISO())!;
+  let start = parseDateOnly(p.start) ?? addDays(end, -29);
+  if (start > end) start = end;
+  // [start, endExclusive) in stored "UTC midnight" delivery dates
+  return { start, end, endExclusive: addDays(end, 1) };
 }
 
 export default async function SalesReport({
@@ -20,33 +19,45 @@ export default async function SalesReport({
 }: {
   searchParams: Promise<{ start?: string; end?: string }>;
 }) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) redirect("/login?callbackUrl=/admin/reports/sales");
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN") redirect("/dashboard");
-
-  const { start, end } = await parseRange(searchParams);
+  await requirePageUser(["ADMIN"], "/admin/reports/sales");
+  const { start, end, endExclusive } = await parseRange(searchParams);
 
   const orders = await prisma.order.findMany({
     where: {
-      deliveryDate: { gte: start, lte: end },
-      status: { in: ["PICKUP", "OUT_FOR_DELIVERY", "COMPLETED", "READY", "IN_PROGRESS", "NEW"] },
+      deliveryDate: { gte: start, lt: endExclusive },
     },
-    select: { id: true, orderType: true, amount: true, deliveryDate: true, status: true },
+    select: {
+      id: true,
+      orderType: true,
+      amount: true,
+      deliveryDate: true,
+      status: true,
+      payments: { select: { method: true, amount: true } },
+    },
   });
 
   const totalOrders = orders.length;
   const pickupCount = orders.filter((o) => o.orderType === "PICKUP").length;
   const deliveryCount = orders.filter((o) => o.orderType === "DELIVERY").length;
-  const totalAmount = orders.reduce((sum, o) => sum + Number((o as any).amount ?? 0), 0);
+  let totalAmount = 0;
+  let cashTotal = 0;
+  let cardTotal = 0;
+  let dueTotal = 0;
+  for (const o of orders) {
+    const p = paymentSummary(o.amount, o.payments);
+    totalAmount += p.total;
+    cashTotal += p.cash;
+    cardTotal += p.card;
+    dueTotal += p.due;
+  }
 
   // Group by date for a simple daily breakdown
   const byDate = new Map<string, { count: number; amount: number }>();
   for (const o of orders) {
-    const key = o.deliveryDate.toISOString().slice(0, 10);
+    const key = toDateOnly(o.deliveryDate);
     const entry = byDate.get(key) || { count: 0, amount: 0 };
     entry.count += 1;
-    entry.amount += Number((o as any).amount ?? 0);
+    entry.amount += Number(o.amount);
     byDate.set(key, entry);
   }
   const daily = Array.from(byDate.entries())
@@ -61,13 +72,19 @@ export default async function SalesReport({
         <form className="mb-4 flex gap-3 items-end">
           <div>
             <label className="block text-sm mb-1 text-space-text-secondary">Başlanğıc</label>
-            <Input type="date" name="start" defaultValue={start.toISOString().slice(0, 10)} />
+            <Input type="date" name="start" defaultValue={toDateOnly(start)} />
           </div>
           <div>
             <label className="block text-sm mb-1 text-space-text-secondary">Son</label>
-            <Input type="date" name="end" defaultValue={end.toISOString().slice(0, 10)} />
+            <Input type="date" name="end" defaultValue={toDateOnly(end)} />
           </div>
           <Button type="submit" variant="accent" size="sm">Göstər</Button>
+          <a
+            href={`/api/export/orders?format=csv&startDate=${toDateOnly(start)}&endDate=${toDateOnly(end)}`}
+            className="inline-flex items-center rounded-lg border border-space-border bg-white px-3 py-1.5 text-sm font-medium text-space-text-primary hover:bg-space-surface-light"
+          >
+            ⬇️ CSV (Excel)
+          </a>
         </form>
 
         <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -85,9 +102,23 @@ export default async function SalesReport({
           </div>
         </div>
 
-        <div className="rounded-md border border-space-border p-4 mb-6 bg-space-surface-light">
-          <div className="text-xs text-space-text-secondary">Toplam məbləğ (AZN)</div>
-          <div className="text-2xl font-semibold text-space-text-primary">{totalAmount.toFixed(2)}</div>
+        <div className="grid sm:grid-cols-4 gap-4 mb-6">
+          <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
+            <div className="text-xs text-space-text-secondary">Toplam məbləğ (AZN)</div>
+            <div className="text-2xl font-semibold text-space-text-primary">{totalAmount.toFixed(2)}</div>
+          </div>
+          <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
+            <div className="text-xs text-space-text-secondary">Nağd alınıb</div>
+            <div className="text-2xl font-semibold text-emerald-700">{cashTotal.toFixed(2)}</div>
+          </div>
+          <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
+            <div className="text-xs text-space-text-secondary">Kartla alınıb</div>
+            <div className="text-2xl font-semibold text-blue-700">{cardTotal.toFixed(2)}</div>
+          </div>
+          <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
+            <div className="text-xs text-space-text-secondary">Ödənilməmiş / borc</div>
+            <div className="text-2xl font-semibold text-red-700">{dueTotal.toFixed(2)}</div>
+          </div>
         </div>
 
         <h2 className="text-lg font-semibold mb-2 text-space-text-primary">Günlər üzrə</h2>

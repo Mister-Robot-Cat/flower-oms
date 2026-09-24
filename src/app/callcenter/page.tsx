@@ -1,10 +1,9 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import StatusAction from "./ui/StatusAction";
 import Badge from "@/app/ui/Badge";
 import Link from "next/link";
+import { STATUS_LABELS } from "@/lib/order-shared";
 
 function statusVariant(status: string): Parameters<typeof Badge>[0]["variant"] {
   switch (status) {
@@ -20,20 +19,16 @@ function statusVariant(status: string): Parameters<typeof Badge>[0]["variant"] {
 }
 
 export default async function CallCenterPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) redirect("/login?callbackUrl=/callcenter");
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "CALL_CENTER" && role !== "ADMIN") redirect("/dashboard");
-
+  await requirePageUser(["CALL_CENTER", "ADMIN"], "/callcenter");
   const readyOrders = await prisma.order.findMany({
     where: { status: "READY" },
     orderBy: { deliveryDate: "asc" },
-    select: { id: true, customerFullName: true, deliveryDate: true, deliveryTime: true },
+    select: { id: true, orderNumber: true, customerFullName: true, deliveryDate: true, deliveryTime: true, orderType: true },
   });
   const pickupOrDelivery = await prisma.order.findMany({
     where: { status: { in: ["PICKUP", "OUT_FOR_DELIVERY"] } },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, customerFullName: true, status: true, deliveryDate: true, deliveryTime: true },
+    select: { id: true, orderNumber: true, customerFullName: true, status: true, deliveryDate: true, deliveryTime: true },
   });
 
   return (
@@ -48,7 +43,7 @@ export default async function CallCenterPage() {
               <div key={o.id} className="rounded-md border border-space-border p-4 bg-space-surface-light hover:bg-space-surface-light/70 transition">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <div className="text-sm text-space-text-secondary mb-1">{o.id.slice(0, 8)}</div>
+                    <div className="text-sm text-space-text-secondary mb-1">#{o.orderNumber}</div>
                     <div className="font-medium text-space-text-primary">{o.customerFullName}</div>
                     <div className="text-sm text-space-text-primary">
                       {o.deliveryDate.toISOString().slice(0, 10)} {o.deliveryTime}
@@ -77,13 +72,13 @@ export default async function CallCenterPage() {
               <div key={o.id} className="rounded-md border border-space-border p-4 bg-space-surface-light hover:bg-space-surface-light/70 transition">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <div className="text-sm text-space-text-secondary mb-1">{o.id.slice(0, 8)}</div>
+                    <div className="text-sm text-space-text-secondary mb-1">#{o.orderNumber}</div>
                     <div className="font-medium text-space-text-primary">{o.customerFullName}</div>
                     <div className="text-sm text-space-text-primary">
                       {o.deliveryDate.toISOString().slice(0, 10)} {o.deliveryTime}
                     </div>
                     <div className="mt-2">
-                      <Badge variant={statusVariant(o.status)}>{o.status}</Badge>
+                      <Badge variant={statusVariant(o.status)}>{STATUS_LABELS[o.status]}</Badge>
                     </div>
                   </div>
                   <Link href={`/orders/${o.id}`} className="text-xs text-cosmic-purple-light hover:text-cosmic-purple transition-colors">

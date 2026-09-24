@@ -1,23 +1,10 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import UsersList from "./ui/UsersList";
 import NewUserButton from "./ui/NewUserButton";
 
 export default async function UsersManagementPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    redirect("/login?callbackUrl=/admin/users");
-  }
-
-  const role = (session.user as any).role as string;
-  if (role !== "ADMIN") {
-    redirect("/dashboard");
-  }
-
+  const user = await requirePageUser(["ADMIN"], "/admin/users");
   const users = await prisma.user.findMany({
     select: {
       id: true,
