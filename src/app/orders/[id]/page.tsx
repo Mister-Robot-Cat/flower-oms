@@ -85,7 +85,7 @@ export default async function OrderDetailPage({ params }: Props) {
         <EditOrderForm order={clientOrder} allowedStatuses={[...STATUS_TARGETS_BY_ROLE[user.role]]} />
 
         <div className="mt-10 grid md:grid-cols-2 gap-6">
-          <section>
+          <section id="odenis" className="scroll-mt-20">
             <h2 className="text-lg font-semibold mb-3 text-space-text-primary">Ödəniş</h2>
             <div className="rounded-xl border border-space-border bg-white p-4">
               <PaymentPanel orderId={order.id} canCancel={user.role === "ADMIN"} />

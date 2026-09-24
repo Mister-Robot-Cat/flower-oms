@@ -6,6 +6,8 @@ import Input from "@/app/ui/Input";
 import Select from "@/app/ui/Select";
 import Button from "@/app/ui/Button";
 import { STATUS_LABELS, type OrderStatusValue } from "@/lib/order-shared";
+import { requestStatus } from "@/lib/status-client";
+import UnpaidCloseDialog from "@/components/UnpaidCloseDialog";
 
 interface EditOrderFormProps {
   order: {
@@ -45,6 +47,26 @@ export default function EditOrderForm({ order, allowedStatuses }: EditOrderFormP
   const [status, setStatus] = useState(order.status || "NEW");
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [unpaidDue, setUnpaidDue] = useState<number | null>(null);
+
+  async function saveStatus(closeWithDebt?: boolean) {
+    setStatusMsg(null);
+    setStatusLoading(true);
+    try {
+      const result = await requestStatus(order.id, { status: status as OrderStatusValue, closeWithDebt });
+      if (result.ok) {
+        setUnpaidDue(null);
+        setStatusMsg("Status uğurla yeniləndi");
+        router.refresh();
+      } else if (result.unpaidDue !== null) {
+        setUnpaidDue(result.unpaidDue);
+      } else {
+        setStatusMsg(result.error);
+      }
+    } finally {
+      setStatusLoading(false);
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -228,26 +250,7 @@ export default function EditOrderForm({ order, allowedStatuses }: EditOrderFormP
               </Select>
             </div>
             <Button
-              onClick={async () => {
-                setStatusMsg(null);
-                setStatusLoading(true);
-                try {
-                  const res = await fetch(`/api/orders/${order.id}/status`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ status }),
-                  });
-                  const data = await res.json().catch(() => null);
-                  if (!res.ok) {
-                    setStatusMsg(data?.error || "Status yenilənmədi");
-                  } else {
-                    setStatusMsg("Status uğurla yeniləndi");
-                    router.refresh();
-                  }
-                } finally {
-                  setStatusLoading(false);
-                }
-              }}
+              onClick={() => saveStatus()}
               disabled={statusLoading}
               type="button"
               variant="accent"
@@ -256,6 +259,16 @@ export default function EditOrderForm({ order, allowedStatuses }: EditOrderFormP
               {statusLoading ? "Yenilənir..." : "Statusu yenilə"}
             </Button>
           </div>
+          <UnpaidCloseDialog
+            due={unpaidDue}
+            busy={statusLoading}
+            onPay={() => {
+              setUnpaidDue(null);
+              document.getElementById("odenis")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            onDebt={() => saveStatus(true)}
+            onCancel={() => setUnpaidDue(null)}
+          />
           {statusMsg && (
             <p className="mt-2 text-sm text-space-text-secondary">{statusMsg}</p>
           )}
