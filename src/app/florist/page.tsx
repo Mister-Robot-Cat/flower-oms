@@ -5,11 +5,28 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+type FloristOrder = {
+  id: string;
+  orderNumber: number;
+  customerFullName: string;
+  deliveryTime: string;
+  status: string;
+  orderType: "PICKUP" | "DELIVERY";
+  amount: string;
+  assignedToId: string | null;
+  assignedTo: { displayName: string } | null;
+  photoUrl: string | null;
+};
+
 export default function FloristDashboard() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [orders, setOrders] = useState<any[]>([]);
+  // Local calendar day (not UTC), so early-morning shifts see the right date.
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const [orders, setOrders] = useState<FloristOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,7 +86,7 @@ export default function FloristDashboard() {
               <div className="col-span-2 text-center py-8 text-space-text-secondary">Yüklənir...</div>
             ) : orders.length === 0 ? (
               <div className="col-span-2 text-center py-8 text-space-text-secondary">Bu tarixdə sifariş yoxdur</div>
-            ) : orders.map((o: any) => {
+            ) : orders.map((o) => {
               const getCardColor = (status: string) => {
                 if (status === 'NEW') return 'bg-red-100 border-red-400 hover:bg-red-200 shadow-red-100';
                 if (status === 'IN_PROGRESS' || status === 'READY') return 'bg-amber-100 border-amber-400 hover:bg-amber-200 shadow-amber-100';
@@ -89,11 +106,11 @@ export default function FloristDashboard() {
                         {/* Строка 1: ID и Имя заказчика */}
                         <div className="py-2 pr-3 border-b-2 border-r-2 border-gray-400">
                           <div className="text-lg font-extrabold text-gray-700">
-                            #{o.id.slice(0, 8)}
+                            #{o.orderNumber}
                           </div>
                         </div>
                         <div className="py-2 pl-3 border-b-2 border-gray-400">
-                          <div className="font-bold text-base text-gray-900 leading-tight">
+                          <div className="font-bold text-base text-gray-900 leading-tight break-words [overflow-wrap:anywhere]">
                             {o.customerFullName}
                           </div>
                         </div>
@@ -101,7 +118,7 @@ export default function FloristDashboard() {
                         {/* Строка 2: Время и Тип доставки */}
                         <div className="py-2 pr-3 border-b-2 border-r-2 border-gray-400">
                           <div className="text-2xl font-bold text-gray-900">
-                            🕒 {new Date(o.createdAt).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })}
+                            🕒 {o.deliveryTime}
                           </div>
                         </div>
                         <div className="py-2 pl-3 border-b-2 border-gray-400">
@@ -126,10 +143,11 @@ export default function FloristDashboard() {
                       </div>
                     </div>
                     
-                    {o.photos && o.photos.length > 0 && (
+                    {o.photoUrl && (
                       <div className="w-28 flex-shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image */}
                         <img
-                          src={o.photos[0].filePath}
+                          src={o.photoUrl}
                           alt="Order photo"
                           className="w-full h-full object-cover"
                         />

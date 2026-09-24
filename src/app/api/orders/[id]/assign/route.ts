@@ -1,66 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireApiUser, jsonError } from "@/lib/session";
 
-export async function POST(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> } | { params: { id: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "FLORIST") {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
+// A florist takes an order. Atomic: if two florists click at the same time,
+// only one of them gets it.
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireApiUser(["FLORIST"]);
+  if (auth.response) return auth.response;
+  const { user } = auth;
+  const { id } = await params;
 
-  const paramsMaybePromise = (context as any).params;
-  const { id } =
-    typeof paramsMaybePromise?.then === "function"
-      ? await paramsMaybePromise
-      : paramsMaybePromise || {};
-  if (!id) {
-    return NextResponse.json({ error: "Sifariş ID-si tapılmadı" }, { status: 400 });
-  }
+  const existing = await prisma.order.findUnique({ where: { id } });
+  if (!existing) return jsonError("Sifariş tapılmadı", 404);
 
-  const username = (session.user as any).username as string | undefined;
-  const currentUser = username
-    ? await prisma.user.findUnique({ where: { username } })
-    : null;
-  if (!currentUser) {
-    return NextResponse.json({ error: "İstifadəçi tapılmadı" }, { status: 400 });
-  }
+  const claimed = await prisma.order.updateMany({
+    where: { id, OR: [{ assignedToId: null }, { assignedToId: user.id }] },
+    data: {
+      assignedToId: user.id,
+      ...(existing.status === "NEW" ? { status: "IN_PROGRESS" as const } : {}),
+    },
+  });
+  if (claimed.count === 0) return jsonError("Sifariş artıq təyin edilib", 409);
 
-  try {
-    const existing = await prisma.order.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json({ error: "Sifariş tapılmadı" }, { status: 404 });
-    }
-    if (existing.assignedToId && existing.assignedToId !== currentUser.id) {
-      return NextResponse.json({ error: "Sifariş artıq təyin edilib" }, { status: 409 });
-    }
+  await prisma.orderEvent.create({
+    data: {
+      orderId: id,
+      userId: user.id,
+      type: "ORDER_ASSIGNED",
+      from: existing.status,
+      to: existing.status === "NEW" ? "IN_PROGRESS" : existing.status,
+    },
+  });
 
-    const updated = await prisma.order.update({
-      where: { id },
-      data: {
-        assignedTo: { connect: { id: currentUser.id } },
-        status: "IN_PROGRESS",
-      },
-    });
-
-    await prisma.orderEvent.create({
-      data: {
-        orderId: id,
-        userId: currentUser.id,
-        type: "ORDER_ASSIGNED",
-        to: "IN_PROGRESS" as any,
-      },
-    });
-
-    return NextResponse.json({ order: updated }, { status: 200 });
-  } catch (e) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }
+  const order = await prisma.order.findUnique({ where: { id } });
+  return NextResponse.json({ order }, { status: 200 });
 }

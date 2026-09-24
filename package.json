@@ -7,9 +7,16 @@
     "dev-webpack": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:admin": "tsx scripts/create-admin.ts",
+    "db:seed-demo": "tsx scripts/seed-demo.ts",
+    "db:link-customers": "tsx scripts/link-customers.ts"
   },
   "dependencies": {
+    "@prisma/adapter-mariadb": "^6.19.2",
     "@prisma/client": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "next": "16.1.1",
@@ -17,8 +24,6 @@
     "prisma": "^6.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3",
     "zod": "^4.3.5"
   },
   "devDependencies": {
@@ -33,5 +38,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.12"
   }
 }

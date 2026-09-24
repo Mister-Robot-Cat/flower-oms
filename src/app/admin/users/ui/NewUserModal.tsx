@@ -40,8 +40,8 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Şifrə ən azı 6 simvol olmalıdır");
+    if (formData.password.length < 8) {
+      setError("Şifrə ən azı 8 simvol olmalıdır");
       return;
     }
 

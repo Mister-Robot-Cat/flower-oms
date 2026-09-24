@@ -1,38 +1,26 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { dayRange, todayISO } from "@/lib/dates";
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  const role = (session.user as any).role as string | undefined;
-  const userId = (session.user as any).id as string;
+  const user = await requirePageUser(undefined, "/dashboard");
+  const role = user.role;
+  const userId = user.id;
 
   let title = "Panel";
   if (role === "ADMIN") title = "Admin paneli";
   if (role === "CALL_CENTER") title = "Zəng mərkəzi operator paneli";
   if (role === "FLORIST") title = "Florist paneli";
 
-  // Получаем статистику
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // Today in the shop's time zone (Asia/Baku by default)
+  const todayRange = dayRange(todayISO())!;
 
   const [totalOrders, todayOrders, newOrders, readyOrders, myOrders] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({
       where: {
-        deliveryDate: {
-          gte: today,
-          lt: tomorrow,
-        },
+        deliveryDate: todayRange,
       },
     }),
     prisma.order.count({ where: { status: "NEW" } }),
@@ -60,7 +48,7 @@ export default async function DashboardPage() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display bg-gradient-to-r from-[#6E1075] to-[#631974] bg-clip-text text-transparent mb-2 sm:mb-3 tracking-tight px-4">
             {title}
           </h1>
-          <p className="text-[#501257] text-base sm:text-lg lg:text-xl font-light tracking-wide px-4">Xoš gəlmisiniz! Rolunuz: <span className="font-semibold text-[#631974]">{role}</span></p>
+          <p className="text-[#501257] text-base sm:text-lg lg:text-xl font-light tracking-wide px-4">Xoş gəldiniz, <span className="font-semibold text-[#631974]">{user.displayName}</span></p>
         </div>
 
         {/* Florist Special Stats - Moved to top for better visibility */}

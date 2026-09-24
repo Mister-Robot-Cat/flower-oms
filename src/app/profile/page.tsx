@@ -1,16 +1,10 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requirePageUser } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    redirect("/login?callbackUrl=/profile");
-  }
-
-  const userId = (session.user as any).id as string;
+  const me = await requirePageUser(undefined, "/profile");
+  const userId = me.id;
   
   const user = await prisma.user.findUnique({
     where: { id: userId },

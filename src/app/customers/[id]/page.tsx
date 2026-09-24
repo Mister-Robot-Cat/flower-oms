@@ -1,7 +1,7 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { paymentSummary } from "@/lib/orders";
 import Link from "next/link";
 import Badge from "@/app/ui/Badge";
 import CustomerEditButton from "./ui/CustomerEditButton";
@@ -12,17 +12,7 @@ interface Props {
 
 export default async function CustomerProfilePage({ params }: Props) {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    redirect(`/login?callbackUrl=/customers/${id}`);
-  }
-
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN" && role !== "CALL_CENTER") {
-    redirect("/dashboard");
-  }
-
+  await requirePageUser(["ADMIN", "CALL_CENTER"], `/customers/${id}`);
   const customer = await prisma.customer.findUnique({
     where: { id },
     include: {
@@ -37,15 +27,18 @@ export default async function CustomerProfilePage({ params }: Props) {
     notFound();
   }
 
-  // Статистика
-  const totalOrders = customer.orders.length;
-  const totalSpent = customer.orders.reduce(
-    (sum, order) => sum + Number(order.amount),
-    0
-  );
-  const completedOrders = customer.orders.filter(
-    (o) => o.status === "COMPLETED"
-  ).length;
+  // Statistics over ALL orders of the customer (the list below shows the last 50)
+  const [agg, completedOrders, forDebt] = await Promise.all([
+    prisma.order.aggregate({ where: { customerId: id }, _sum: { amount: true }, _count: true }),
+    prisma.order.count({ where: { customerId: id, status: "COMPLETED" } }),
+    prisma.order.findMany({
+      where: { customerId: id },
+      select: { amount: true, payments: { select: { method: true, amount: true } } },
+    }),
+  ]);
+  const totalOrders = agg._count;
+  const totalSpent = Number(agg._sum.amount ?? 0);
+  const debt = forDebt.reduce((sum, o) => sum + paymentSummary(o.amount, o.payments).due, 0);
 
   return (
     <div className="min-h-screen bg-space-bg-base py-6 px-4">
@@ -120,7 +113,7 @@ export default async function CustomerProfilePage({ params }: Props) {
               <h3 className="text-sm font-semibold text-space-text-secondary uppercase tracking-wide mb-3">
                 Statistika
               </h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="rounded-lg bg-space-surface-light p-3">
                   <div className="text-2xl font-bold text-brand-primary">
                     {totalOrders}
@@ -143,6 +136,14 @@ export default async function CustomerProfilePage({ params }: Props) {
                   </div>
                   <div className="text-xs text-space-text-secondary mt-1">
                     Xərclənib
+                  </div>
+                </div>
+                <div className="rounded-lg bg-space-surface-light p-3">
+                  <div className={`text-2xl font-bold ${debt > 0 ? "text-red-600" : "text-space-text-primary"}`}>
+                    {debt.toFixed(2)} ₼
+                  </div>
+                  <div className="text-xs text-space-text-secondary mt-1">
+                    Borc
                   </div>
                 </div>
               </div>
@@ -210,7 +211,7 @@ export default async function CustomerProfilePage({ params }: Props) {
                       className="hover:bg-space-surface-light transition-colors"
                     >
                       <td className="px-4 py-3 text-sm font-mono text-space-text-secondary">
-                        #{order.id.slice(0, 8)}
+                        #{order.orderNumber}
                       </td>
                       <td className="px-4 py-3 text-sm text-space-text-primary">
                         {new Date(order.createdAt).toLocaleDateString("az-AZ")}

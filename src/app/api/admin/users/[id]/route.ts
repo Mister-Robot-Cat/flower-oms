@@ -1,131 +1,79 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { prisma } from "@/lib/prisma";
+import { requireApiUser, jsonError } from "@/lib/session";
 
-// PATCH - Обновить пользователя
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await getServerSession(authOptions);
+const updateUserSchema = z.object({
+  displayName: z.string().trim().min(1).max(191).optional(),
+  role: z.enum(["ADMIN", "CALL_CENTER", "FLORIST"]).optional(),
+  isActive: z.boolean().optional(),
+  password: z.string().max(200).optional(),
+});
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+type Ctx = { params: Promise<{ id: string }> };
+
+const userSelect = { id: true, username: true, displayName: true, role: true, isActive: true, createdAt: true } as const;
+
+/** Keeps at least one active admin, so nobody can lock the shop out. */
+async function wouldRemoveLastAdmin(targetId: string) {
+  const target = await prisma.user.findUnique({ where: { id: targetId }, select: { role: true, isActive: true } });
+  if (!target || target.role !== "ADMIN" || !target.isActive) return false;
+  const activeAdmins = await prisma.user.count({ where: { role: "ADMIN", isActive: true } });
+  return activeAdmins <= 1;
+}
+
+export async function PATCH(request: Request, { params }: Ctx) {
+  const auth = await requireApiUser(["ADMIN"]);
+  if (auth.response) return auth.response;
+  const { user: me } = auth;
+  const { id } = await params;
+
+  const body = await request.json().catch(() => null);
+  const parsed = updateUserSchema.safeParse(body);
+  if (!parsed.success) return jsonError("Məlumatlar düzgün deyil", 400);
+  const { displayName, role, isActive, password } = parsed.data;
+
+  if (id === me.id && (isActive === false || (role && role !== "ADMIN"))) {
+    return jsonError("Öz hesabınızı deaktiv edə və ya rolunu dəyişə bilməzsiniz", 400);
+  }
+  if ((isActive === false || (role && role !== "ADMIN")) && (await wouldRemoveLastAdmin(id))) {
+    return jsonError("Sistemdə ən azı bir aktiv administrator qalmalıdır", 400);
   }
 
-  const role = (session.user as any).role as string;
-  if (role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const updateData: { displayName?: string; role?: "ADMIN" | "CALL_CENTER" | "FLORIST"; isActive?: boolean; passwordHash?: string } = {};
+  if (displayName !== undefined) updateData.displayName = displayName;
+  if (role !== undefined) updateData.role = role;
+  if (isActive !== undefined) updateData.isActive = isActive;
+  if (password) {
+    if (password.length < 8) return jsonError("Şifrə ən azı 8 simvol olmalıdır", 400);
+    updateData.passwordHash = await bcrypt.hash(password, 10);
   }
 
   try {
-    const { id } = await params;
-    const body = await request.json();
-    const { displayName, role: userRole, isActive, password } = body;
-
-    const updateData: any = {};
-
-    if (displayName !== undefined) {
-      updateData.displayName = displayName;
-    }
-
-    if (userRole !== undefined) {
-      if (!["ADMIN", "CALL_CENTER", "FLORIST"].includes(userRole)) {
-        return NextResponse.json(
-          { error: "Yanlış rol" },
-          { status: 400 }
-        );
-      }
-      updateData.role = userRole;
-    }
-
-    if (isActive !== undefined) {
-      updateData.isActive = isActive;
-    }
-
-    if (password) {
-      if (password.length < 6) {
-        return NextResponse.json(
-          { error: "Şifrə ən azı 6 simvol olmalıdır" },
-          { status: 400 }
-        );
-      }
-      updateData.passwordHash = await bcrypt.hash(password, 10);
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
-
+    const updatedUser = await prisma.user.update({ where: { id }, data: updateData, select: userSelect });
     return NextResponse.json(updatedUser);
   } catch (error) {
     console.error("Error updating user:", error);
-    return NextResponse.json(
-      { error: "İstifadəçi yenilənərkən xəta baş verdi" },
-      { status: 500 }
-    );
+    return jsonError("İstifadəçi yenilənərkən xəta baş verdi", 500);
   }
 }
 
-// DELETE - Удалить пользователя (мягкое удаление - деактивация)
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await getServerSession(authOptions);
+// Soft delete = deactivate. The user is logged out on their next request.
+export async function DELETE(_request: Request, { params }: Ctx) {
+  const auth = await requireApiUser(["ADMIN"]);
+  if (auth.response) return auth.response;
+  const { user: me } = auth;
+  const { id } = await params;
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const role = (session.user as any).role as string;
-  const currentUserId = (session.user as any).id as string;
-
-  if (role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  if (id === me.id) return jsonError("Özünüzü silə bilməzsiniz", 400);
+  if (await wouldRemoveLastAdmin(id)) return jsonError("Sistemdə ən azı bir aktiv administrator qalmalıdır", 400);
 
   try {
-    const { id } = await params;
-
-    // Нельзя удалить самого себя
-    if (id === currentUserId) {
-      return NextResponse.json(
-        { error: "Özünüzü silə bilməzsiniz" },
-        { status: 400 }
-      );
-    }
-
-    // Мягкое удаление - деактивация
-    const deactivatedUser = await prisma.user.update({
-      where: { id },
-      data: { isActive: false },
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        role: true,
-        isActive: true,
-      },
-    });
-
+    const deactivatedUser = await prisma.user.update({ where: { id }, data: { isActive: false }, select: userSelect });
     return NextResponse.json(deactivatedUser);
   } catch (error) {
     console.error("Error deleting user:", error);
-    return NextResponse.json(
-      { error: "İstifadəçi silinərkən xəta baş verdi" },
-      { status: 500 }
-    );
+    return jsonError("İstifadəçi silinərkən xəta baş verdi", 500);
   }
 }

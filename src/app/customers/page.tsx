@@ -1,21 +1,14 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import CustomersList from "./ui/CustomersList";
 import NewCustomerButton from "./ui/NewCustomerButton";
 
+function daysAgo(days: number) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
 export default async function CustomersPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    redirect("/login?callbackUrl=/customers");
-  }
-
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN" && role !== "CALL_CENTER") {
-    redirect("/dashboard");
-  }
-
+  await requirePageUser(["ADMIN", "CALL_CENTER"], "/customers");
   // Получаем статистику
   const [totalCustomers, activeCustomers, recentCustomers] = await Promise.all([
     prisma.customer.count(),
@@ -23,7 +16,7 @@ export default async function CustomersPage() {
     prisma.customer.count({
       where: {
         createdAt: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // последние 30 дней
+          gte: daysAgo(30), // последние 30 дней
         },
       },
     }),

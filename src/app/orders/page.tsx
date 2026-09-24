@@ -1,6 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Badge from "@/app/ui/Badge";
@@ -9,6 +7,9 @@ import Select from "@/app/ui/Select";
 import Button from "@/app/ui/Button";
 import SearchBar from "./ui/SearchBar";
 import OrderCard from "./ui/OrderCard";
+import { dayRange } from "@/lib/dates";
+import { isOrderStatus, paymentSummary, PAYMENT_STATE_LABELS, formatAzn } from "@/lib/orders";
+import type { Prisma } from "../../../prisma-client/client";
 
 function formatStatus(status: string): string {
   switch (status) {
@@ -61,24 +62,22 @@ function statusVariant(status: string): BadgeVariant {
   }
 }
 
+function paymentInfo(order: { amount: { toString(): string }; payments: { method: string; amount: { toString(): string } }[] }) {
+  const p = paymentSummary(order.amount, order.payments);
+  return {
+    paymentPaid: p.state === "PAID",
+    paymentLabel: p.state === "PAID" ? `${PAYMENT_STATE_LABELS.PAID} · ${formatAzn(p.total)}` : `Qalıq ${formatAzn(p.due)} / ${formatAzn(p.total)}`,
+  };
+}
+
 export default async function OrdersPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string; date?: string; time?: string; florist?: string; search?: string }>;
 }) {
   const params = await searchParams;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    redirect("/login?callbackUrl=/orders");
-  }
-
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN" && role !== "CALL_CENTER") {
-    redirect("/dashboard");
-  }
-
-  const where: any = {};
+  const user = await requirePageUser(["ADMIN", "CALL_CENTER"], "/orders");
+  const where: Prisma.OrderWhereInput = {};
 
   if (params.search) {
     where.OR = [
@@ -87,18 +86,13 @@ export default async function OrdersPage({
     ];
   }
 
-  if (params.status) {
+  if (isOrderStatus(params.status)) {
     where.status = params.status;
   }
 
-  if (params.date) {
-    const date = new Date(params.date);
-    const nextDay = new Date(date);
-    nextDay.setDate(nextDay.getDate() + 1);
-    where.deliveryDate = {
-      gte: date,
-      lt: nextDay,
-    };
+  const range = params.date ? dayRange(params.date) : null;
+  if (range) {
+    where.deliveryDate = range;
   }
 
   if (params.time) {
@@ -116,11 +110,11 @@ export default async function OrdersPage({
   const orders = await prisma.order.findMany({
     where,
     include: {
-      assignedTo: true,
+      assignedTo: { select: { displayName: true } },
+      payments: { select: { method: true, amount: true } },
     },
-    orderBy: {
-      deliveryDate: "asc",
-    },
+    orderBy: [{ deliveryDate: "asc" }, { deliveryTime: "asc" }],
+    take: 500,
   });
 
   const florists = await prisma.user.findMany({
@@ -203,7 +197,9 @@ export default async function OrdersPage({
               key={order.id}
               order={{
                 id: order.id,
+                orderNumber: order.orderNumber,
                 customerFullName: order.customerFullName,
+                ...paymentInfo(order),
                 deliveryDate: order.deliveryDate.toISOString().slice(0, 10),
                 deliveryTime: order.deliveryTime,
                 status: order.status,
@@ -230,6 +226,7 @@ export default async function OrdersPage({
                 <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Tarix / Vaxt</th>
                 <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Status</th>
                 <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Florist</th>
+                <th className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-space-text-secondary">Ödəniş</th>
               </tr>
             </thead>
             <tbody>
@@ -240,7 +237,7 @@ export default async function OrdersPage({
                       href={`/orders/${order.id}`}
                       className="underline-offset-2 hover:underline font-medium"
                     >
-                      {order.id.slice(0, 8)}
+                      #{order.orderNumber}
                     </Link>
                   </td>
                   <td className="px-4 py-3 align-top text-base font-semibold text-space-text-primary">{order.customerFullName}</td>
@@ -255,11 +252,14 @@ export default async function OrdersPage({
                   <td className="px-4 py-3 align-top text-base font-medium text-space-text-primary">
                     {order.assignedTo ? order.assignedTo.displayName : "-"}
                   </td>
+                  <td className={`px-4 py-3 align-top text-sm font-medium ${paymentInfo(order).paymentPaid ? "text-emerald-700" : "text-red-700"}`}>
+                    {paymentInfo(order).paymentLabel}
+                  </td>
                 </tr>
               ))}
               {orders.length === 0 && (
                 <tr>
-                  <td className="px-3 py-4 text-center text-space-text-secondary" colSpan={5}>
+                  <td className="px-3 py-4 text-center text-space-text-secondary" colSpan={6}>
                     Sifariş tapılmadı
                   </td>
                 </tr>

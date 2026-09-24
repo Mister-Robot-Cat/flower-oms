@@ -1,18 +1,16 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import Input from "@/app/ui/Input";
 import Button from "@/app/ui/Button";
+import { addDays, parseDateOnly, toDateOnly, todayISO } from "@/lib/dates";
 
-function parseRange(params: Promise<{ start?: string; end?: string }>) {
-  return params.then((p) => {
-    const end = p.end ? new Date(p.end) : new Date();
-    const start = p.start ? new Date(p.start) : new Date(end.getTime() - 29 * 24 * 3600 * 1000);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
-    return { start, end };
-  });
+async function parseRange(params: Promise<{ start?: string; end?: string }>) {
+  const p = await params;
+  const end = parseDateOnly(p.end) ?? parseDateOnly(todayISO())!;
+  let start = parseDateOnly(p.start) ?? addDays(end, -29);
+  if (start > end) start = end;
+  // [start, endExclusive) in stored "UTC midnight" delivery dates
+  return { start, end, endExclusive: addDays(end, 1) };
 }
 
 export default async function PerformanceReport({
@@ -20,18 +18,14 @@ export default async function PerformanceReport({
 }: {
   searchParams: Promise<{ start?: string; end?: string }>;
 }) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) redirect("/login?callbackUrl=/admin/reports/performance");
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN") redirect("/dashboard");
-
-  const { start, end } = await parseRange(searchParams);
+  const user = await requirePageUser(["ADMIN"], "/admin/reports/performance");
+  const { start, end, endExclusive } = await parseRange(searchParams);
 
   // Find ORDER_READY events in range to determine prepared orders and by whom
   const readyEvents = await prisma.orderEvent.findMany({
     where: {
       type: "ORDER_READY",
-      createdAt: { gte: start, lte: end },
+      createdAt: { gte: start, lt: endExclusive },
     },
     select: { orderId: true, userId: true },
   });
@@ -88,11 +82,11 @@ export default async function PerformanceReport({
         <form className="mb-4 flex gap-3 items-end">
           <div>
             <label className="block text-sm mb-1 text-space-text-secondary">Başlanğıc</label>
-            <Input type="date" name="start" defaultValue={start.toISOString().slice(0, 10)} />
+            <Input type="date" name="start" defaultValue={toDateOnly(start)} />
           </div>
           <div>
             <label className="block text-sm mb-1 text-space-text-secondary">Son</label>
-            <Input type="date" name="end" defaultValue={end.toISOString().slice(0, 10)} />
+            <Input type="date" name="end" defaultValue={toDateOnly(end)} />
           </div>
           <Button type="submit" variant="accent" size="sm">Göstər</Button>
         </form>

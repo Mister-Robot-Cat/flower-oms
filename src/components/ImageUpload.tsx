@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Image from "next/image";
+
+export type UploadedImage = { id: string; url: string };
 
 interface ImageUploadProps {
-  onImageUploaded: (url: string) => void;
-  existingImages?: string[];
-  onImageRemoved?: (url: string) => void;
+  onImageUploaded: (image: UploadedImage) => void;
+  existingImages?: UploadedImage[];
+  onImageRemoved?: (id: string) => void;
   maxImages?: number;
 }
+
+const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export default function ImageUpload({
   onImageUploaded,
@@ -24,13 +27,10 @@ export default function ImageUpload({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Проверка типа
-    if (!file.type.startsWith("image/")) {
-      setError("Yalnız şəkil faylları yükləyə bilərsiniz");
+    if (file.type && !ACCEPTED.includes(file.type)) {
+      setError("Yalnız JPG, PNG, WEBP və ya GIF şəkil yükləyə bilərsiniz");
       return;
     }
-
-    // Проверка размера
     if (file.size > 10 * 1024 * 1024) {
       setError("Fayl ölçüsü 10MB-dan çox ola bilməz");
       return;
@@ -38,34 +38,21 @@ export default function ImageUpload({
 
     setError("");
     setUploading(true);
-
     try {
       const formData = new FormData();
       formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
+      const response = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        setError(data.error || "Xəta baş verdi");
-        setUploading(false);
+        setError(data?.error || "Xəta baş verdi");
         return;
       }
-
-      onImageUploaded(data.url);
-      setUploading(false);
-
-      // Очищаем input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (err) {
+      onImageUploaded({ id: data.id, url: data.url });
+    } catch {
       setError("Fayl yüklənərkən xəta baş verdi");
+    } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -73,24 +60,19 @@ export default function ImageUpload({
 
   return (
     <div className="space-y-3">
-      {/* Превью загруженных изображений */}
       {existingImages.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {existingImages.map((url, index) => (
+          {existingImages.map((img, index) => (
             <div
-              key={index}
+              key={img.id}
               className="relative aspect-square rounded-lg border border-space-border overflow-hidden bg-space-surface-light"
             >
-              <Image
-                src={url}
-                alt={`Şəkil ${index + 1}`}
-                fill
-                className="object-cover"
-              />
+              {/* eslint-disable-next-line @next/next/no-img-element -- served by an authenticated API route */}
+              <img src={img.url} alt={`Şəkil ${index + 1}`} className="absolute inset-0 h-full w-full object-cover" />
               {onImageRemoved && (
                 <button
                   type="button"
-                  onClick={() => onImageRemoved(url)}
+                  onClick={() => onImageRemoved(img.id)}
                   className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors shadow-md"
                 >
                   ✕
@@ -101,13 +83,12 @@ export default function ImageUpload({
         </div>
       )}
 
-      {/* Кнопка загрузки */}
       {canAddMore && (
         <div>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={ACCEPTED.join(",")}
             onChange={handleFileChange}
             disabled={uploading}
             className="hidden"
@@ -116,9 +97,7 @@ export default function ImageUpload({
           <label
             htmlFor="image-upload"
             className={`block w-full rounded-lg border-2 border-dashed border-space-border p-6 text-center cursor-pointer transition-colors ${
-              uploading
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:border-cosmic-purple hover:bg-space-surface-light"
+              uploading ? "opacity-50 cursor-not-allowed" : "hover:border-cosmic-purple hover:bg-space-surface-light"
             }`}
           >
             {uploading ? (
@@ -129,26 +108,18 @@ export default function ImageUpload({
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <div className="text-3xl">📷</div>
-                <div className="text-sm font-medium text-space-text-primary">
-                  Şəkil yükləyin
-                </div>
-                <div className="text-xs text-space-text-secondary">
-                  PNG, JPG, WEBP (max 10MB)
-                </div>
+                <div className="text-sm font-medium text-space-text-primary">Şəkil yükləyin</div>
+                <div className="text-xs text-space-text-secondary">PNG, JPG, WEBP (max 10MB)</div>
               </div>
             )}
           </label>
         </div>
       )}
 
-      {/* Ошибка */}
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
-      {/* Информация */}
       {existingImages.length > 0 && (
         <div className="text-xs text-space-text-secondary">
           {existingImages.length} / {maxImages} şəkil yüklənib

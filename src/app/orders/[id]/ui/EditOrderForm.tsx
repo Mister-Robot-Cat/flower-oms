@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Input from "@/app/ui/Input";
 import Select from "@/app/ui/Select";
 import Button from "@/app/ui/Button";
+import { STATUS_LABELS, type OrderStatusValue } from "@/lib/order-shared";
 
 interface EditOrderFormProps {
   order: {
@@ -16,12 +17,13 @@ interface EditOrderFormProps {
     orderType: "PICKUP" | "DELIVERY";
     deliveryAddress: string | null;
     notes: string | null;
-    amount: any;
+    amount: string;
     status?: string;
   };
+  allowedStatuses: OrderStatusValue[];
 }
 
-export default function EditOrderForm({ order }: EditOrderFormProps) {
+export default function EditOrderForm({ order, allowedStatuses }: EditOrderFormProps) {
   const router = useRouter();
 
   const initialDate =
@@ -81,7 +83,9 @@ export default function EditOrderForm({ order }: EditOrderFormProps) {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Sifarişi yeniləmək mümkün olmadı");
+      const fieldErrors = data?.details?.fieldErrors as Record<string, string[]> | undefined;
+      const firstField = fieldErrors ? Object.values(fieldErrors).flat()[0] : undefined;
+      setError(firstField || data?.error || "Sifarişi yeniləmək mümkün olmadı");
       return;
     }
 
@@ -90,8 +94,8 @@ export default function EditOrderForm({ order }: EditOrderFormProps) {
   }
 
   return (
-    <div className="min-h-screen bg-cosmic-gradient py-8">
-      <div className="mx-auto max-w-3xl rounded-xl bg-space-surface p-6 shadow-xl border border-space-border">
+    <div>
+      <div>
         <h1 className="text-2xl font-semibold mb-4 font-display text-space-text-primary">Sifarişi redaktə et</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,9 +215,16 @@ export default function EditOrderForm({ order }: EditOrderFormProps) {
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="PICKUP">Mağazadan götürmə</option>
-                <option value="OUT_FOR_DELIVERY">Çatdırılmaya verildi</option>
-                <option value="COMPLETED">Tamamlandı</option>
+                {!allowedStatuses.includes(status as OrderStatusValue) && (
+                  <option value={status} disabled>
+                    {STATUS_LABELS[status as OrderStatusValue] ?? status}
+                  </option>
+                )}
+                {allowedStatuses.map((s) => (
+                  <option key={s} value={s}>
+                    {STATUS_LABELS[s]}
+                  </option>
+                ))}
               </Select>
             </div>
             <Button

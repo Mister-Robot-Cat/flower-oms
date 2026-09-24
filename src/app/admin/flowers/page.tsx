@@ -1,16 +1,10 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import NewFlowerForm from "./ui/NewFlowerForm";
 import EditFlowerRow from "./ui/EditFlowerRow";
 
 export default async function FlowersAdminPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) redirect("/login?callbackUrl=/admin/flowers");
-  const role = (session.user as any).role as string | undefined;
-  if (role !== "ADMIN") redirect("/dashboard");
-
+  await requirePageUser(["ADMIN"], "/admin/flowers");
   const flowers = await prisma.flower.findMany({ orderBy: { name: "asc" } });
 
   return (
