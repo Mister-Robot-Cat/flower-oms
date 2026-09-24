@@ -77,3 +77,14 @@ export function formatDayMonthAz(isoDate: string): string {
   const d = new Date(isoDate);
   return `${d.getUTCDate()} ${AZ_MONTHS[d.getUTCMonth()]}`;
 }
+
+/**
+ * "24.09.2026", identical on the server and in the browser (no locale data),
+ * so client components do not hit hydration mismatches. Date-only values
+ * (birthday, delivery date) are stored as UTC midnight: pass "UTC" for them.
+ */
+export function formatDateAz(value: string | Date, timeZone: string = "Asia/Baku"): string {
+  return new Intl.DateTimeFormat("en-GB", { timeZone, day: "2-digit", month: "2-digit", year: "numeric" })
+    .format(new Date(value))
+    .replace(/\//g, ".");
+}

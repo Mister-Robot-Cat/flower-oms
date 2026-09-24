@@ -11,6 +11,16 @@ function csvCell(value: unknown): string {
   return `"${s.replace(/"/g, '""')}"`;
 }
 
+/**
+ * "+994501234567" -> "050 123 45 67". Excel reads a leading "+" as a formula,
+ * so the formula guard used to show these as "'+994...". The local spaced
+ * form is plain text, keeps the leading zero and is what the staff dial.
+ */
+function phoneForExcel(phone: string): string {
+  const m = /^\+994(\d{2})(\d{3})(\d{2})(\d{2})$/.exec(phone);
+  return m ? `0${m[1]} ${m[2]} ${m[3]} ${m[4]}` : phone;
+}
+
 export async function GET(request: Request) {
   const auth = await requireApiUser(["ADMIN"]);
   if (auth.response) return auth.response;
@@ -51,7 +61,7 @@ export async function GET(request: Request) {
     return [
       o.orderNumber,
       o.customerFullName,
-      o.customerPhone,
+      phoneForExcel(o.customerPhone),
       toDateOnly(o.deliveryDate),
       o.deliveryTime,
       o.orderType === "DELIVERY" ? "Çatdırılma" : "Mağazadan",

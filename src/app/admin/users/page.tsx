@@ -4,7 +4,7 @@ import UsersList from "./ui/UsersList";
 import NewUserButton from "./ui/NewUserButton";
 
 export default async function UsersManagementPage() {
-  const user = await requirePageUser(["ADMIN"], "/admin/users");
+  await requirePageUser(["ADMIN"], "/admin/users");
   const users = await prisma.user.findMany({
     select: {
       id: true,

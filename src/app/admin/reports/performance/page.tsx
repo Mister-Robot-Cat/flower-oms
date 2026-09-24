@@ -18,7 +18,7 @@ export default async function PerformanceReport({
 }: {
   searchParams: Promise<{ start?: string; end?: string }>;
 }) {
-  const user = await requirePageUser(["ADMIN"], "/admin/reports/performance");
+  await requirePageUser(["ADMIN"], "/admin/reports/performance");
   const { start, end, endExclusive } = await parseRange(searchParams);
 
   // Find ORDER_READY events in range to determine prepared orders and by whom

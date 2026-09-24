@@ -51,7 +51,7 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
       router.refresh();
       onClose();
       resetForm();
-    } catch (err) {
+    } catch {
       setError("Müştəri yaratmaq mümkün olmadı");
       setLoading(false);
     }

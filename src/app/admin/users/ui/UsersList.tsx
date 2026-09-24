@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Badge from "@/app/ui/Badge";
 import UserEditModal from "./UserEditModal";
+import { formatDateAz } from "@/lib/order-shared";
 
 interface User {
   id: string;
@@ -133,7 +134,7 @@ export default function UsersList({ users: initialUsers }: UsersListProps) {
                   )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-space-text-secondary">
-                  {new Date(user.createdAt).toLocaleDateString("az-AZ")}
+                  {formatDateAz(user.createdAt)}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
                   <button
