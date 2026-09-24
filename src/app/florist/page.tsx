@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AssignButton from "./ui/AssignButton";
+import { STATUS_LABELS, isOrderStatus } from "@/lib/order-shared";
 
 type FloristOrder = {
   id: string;
@@ -18,16 +20,36 @@ type FloristOrder = {
   photoUrl: string | null;
 };
 
-export default function FloristDashboard() {
-  const { status } = useSession();
-  const router = useRouter();
+type Filter = "all" | "mine" | "free";
+
+/** New orders from the call center appear on the board without a reload. */
+const REFRESH_MS = 30_000;
+
+// Card colour and badge per status: red = nobody took it, amber = being made,
+// sky = ready and waiting, green = handed over.
+const STATUS_STYLE: Record<string, { card: string; badge: string }> = {
+  NEW: { card: "bg-red-50 border-red-400", badge: "bg-red-600 text-white" },
+  IN_PROGRESS: { card: "bg-amber-50 border-amber-400", badge: "bg-amber-500 text-white" },
+  READY: { card: "bg-sky-50 border-sky-400", badge: "bg-sky-600 text-white" },
+};
+const DONE_STYLE = { card: "bg-emerald-50 border-emerald-400", badge: "bg-emerald-600 text-white" };
+
+function localToday() {
   // Local calendar day (not UTC), so early-morning shifts see the right date.
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  });
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export default function FloristDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const myId = session?.user?.id;
+  // Only florists can take orders (the admin also sees this board).
+  const canTake = session?.user?.role === "FLORIST";
+  const [selectedDate, setSelectedDate] = useState<string>(localToday);
   const [orders, setOrders] = useState<FloristOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>("all");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -35,128 +57,142 @@ export default function FloristDashboard() {
     }
   }, [status, router]);
 
-  useEffect(() => {
-    if (status === "authenticated" && selectedDate) {
-      fetchOrders(selectedDate);
-    }
-  }, [selectedDate, status]);
-
-  const fetchOrders = async (date: string) => {
-    setLoading(true);
+  const fetchOrders = useCallback(async (date: string, silent = false) => {
+    if (!silent) setLoading(true);
     try {
-      const response = await fetch(`/api/florist/orders?date=${date}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await fetch(`/api/florist/orders?date=${date}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       setOrders(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching orders:", error);
-      setOrders([]);
+      if (!silent) setOrders([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !selectedDate) return;
+    fetchOrders(selectedDate);
+    const refresh = () => {
+      if (document.visibilityState === "visible") fetchOrders(selectedDate, true);
+    };
+    const timer = setInterval(refresh, REFRESH_MS);
+    window.addEventListener("focus", refresh);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [selectedDate, status, fetchOrders]);
 
   if (status === "loading") {
-    return <div className="min-h-screen bg-cosmic-gradient flex items-center justify-center">
-      <div className="text-2xl text-space-text-primary">Yüklənir...</div>
-    </div>;
+    return (
+      <div className="min-h-screen bg-cosmic-gradient flex items-center justify-center">
+        <div className="text-2xl text-space-text-primary">Yüklənir...</div>
+      </div>
+    );
   }
 
   if (status === "unauthenticated") {
     return null;
   }
 
+  const counts = {
+    all: orders.length,
+    mine: orders.filter((o) => o.assignedToId === myId).length,
+    free: orders.filter((o) => !o.assignedToId).length,
+  };
+  const visible = orders.filter((o) =>
+    filter === "mine" ? o.assignedToId === myId : filter === "free" ? !o.assignedToId : true,
+  );
+  const filters: { key: Filter; label: string }[] = [
+    { key: "all", label: "Hamısı" },
+    { key: "mine", label: "Mənim" },
+    { key: "free", label: "Boş" },
+  ];
+
   return (
-    <div className="min-h-screen bg-cosmic-gradient py-4">
+    <div className="min-h-screen bg-cosmic-gradient py-4 px-3">
       <div className="mx-auto max-w-5xl rounded-xl bg-space-surface p-4 shadow-xl border border-space-border">
-        <div className="mb-4">
+        <div className="mb-3">
           <input
             type="date"
+            aria-label="Tarix"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             className="w-full px-4 py-3 text-xl font-semibold rounded-lg border-2 border-space-border bg-white text-space-text-primary focus:outline-none focus:border-[#6E1075] transition-colors"
           />
         </div>
 
+        <div className="mb-4 grid grid-cols-3 gap-2" role="group" aria-label="Filtr">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              aria-pressed={filter === f.key}
+              onClick={() => setFilter(f.key)}
+              className={`rounded-lg px-2 py-2.5 text-sm font-semibold border transition-colors ${
+                filter === f.key
+                  ? "bg-cosmic-purple border-cosmic-purple text-white"
+                  : "bg-white border-space-border text-space-text-primary hover:bg-space-surface-light"
+              }`}
+            >
+              {f.label} ({counts[f.key]})
+            </button>
+          ))}
+        </div>
+
         <section>
           <div className="grid gap-3 md:grid-cols-2">
             {loading ? (
-              <div className="col-span-2 text-center py-8 text-space-text-secondary">Yüklənir...</div>
-            ) : orders.length === 0 ? (
-              <div className="col-span-2 text-center py-8 text-space-text-secondary">Bu tarixdə sifariş yoxdur</div>
-            ) : orders.map((o) => {
-              const getCardColor = (status: string) => {
-                if (status === 'NEW') return 'bg-red-100 border-red-400 hover:bg-red-200 shadow-red-100';
-                if (status === 'IN_PROGRESS' || status === 'READY') return 'bg-amber-100 border-amber-400 hover:bg-amber-200 shadow-amber-100';
-                return 'bg-emerald-100 border-emerald-400 hover:bg-emerald-200 shadow-emerald-100';
-              };
-
-              return (
-                <Link
-                  key={o.id}
-                  href={`/florist/orders/${o.id}`}
-                  className={`block rounded-lg border transition-all duration-200 hover:shadow-lg overflow-hidden ${getCardColor(o.status)}`}
-                >
-                  <div className="flex h-full">
-                    <div className="flex-1 p-2">
-                      {/* Таблица с двумя столбцами */}
-                      <div className="grid grid-cols-2">
-                        {/* Строка 1: ID и Имя заказчика */}
-                        <div className="py-2 pr-3 border-b-2 border-r-2 border-gray-400">
-                          <div className="text-lg font-extrabold text-gray-700">
-                            #{o.orderNumber}
-                          </div>
+              <div className="md:col-span-2 text-center py-8 text-space-text-secondary">Yüklənir...</div>
+            ) : visible.length === 0 ? (
+              <div className="md:col-span-2 text-center py-8 text-space-text-secondary">
+                {orders.length === 0 ? "Bu tarixdə sifariş yoxdur" : "Bu filtrdə sifariş yoxdur"}
+              </div>
+            ) : (
+              visible.map((o) => {
+                const style = STATUS_STYLE[o.status] ?? DONE_STYLE;
+                const label = isOrderStatus(o.status) ? STATUS_LABELS[o.status] : o.status;
+                return (
+                  <div key={o.id} className={`rounded-lg border-2 overflow-hidden ${style.card}`}>
+                    <Link href={`/florist/orders/${o.id}`} className="flex hover:brightness-95 transition">
+                      <div className="flex-1 min-w-0 p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-lg font-extrabold text-gray-700">#{o.orderNumber}</span>
+                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${style.badge}`}>{label}</span>
                         </div>
-                        <div className="py-2 pl-3 border-b-2 border-gray-400">
-                          <div className="font-bold text-base text-gray-900 leading-tight break-words [overflow-wrap:anywhere]">
-                            {o.customerFullName}
-                          </div>
+                        <div className="text-lg font-bold text-gray-900 truncate">{o.customerFullName}</div>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                          <span className="text-2xl font-bold text-gray-900">🕒 {o.deliveryTime}</span>
+                          <span className="text-sm font-semibold text-gray-700">
+                            {o.orderType === "PICKUP" ? "🏪 Mağaza" : "🚚 Çatdırılma"}
+                          </span>
                         </div>
-                        
-                        {/* Строка 2: Время и Тип доставки */}
-                        <div className="py-2 pr-3 border-b-2 border-r-2 border-gray-400">
-                          <div className="text-2xl font-bold text-gray-900">
-                            🕒 {o.deliveryTime}
-                          </div>
-                        </div>
-                        <div className="py-2 pl-3 border-b-2 border-gray-400">
-                          <div className="inline-flex items-center gap-1 px-2 py-1 bg-white/60 rounded-md text-sm font-semibold text-gray-800">
-                            {o.orderType === 'PICKUP' ? '🏪 Mağaza' : '🚚 Çatdırılma'}
-                          </div>
-                        </div>
-                        
-                        {/* Строка 3: Цена и Имя флориста */}
-                        <div className="py-2 pr-3 border-r-2 border-gray-400">
-                          <div className="text-lg font-bold text-purple-700">
-                            💰 {Number(o.amount).toFixed(2)} ₼
-                          </div>
-                        </div>
-                        <div className="py-2 pl-3">
-                          {o.assignedTo && (
-                            <div className="inline-flex items-center gap-1 px-2 py-1 bg-purple-200/60 rounded-md text-sm font-bold text-purple-900">
-                              👤 {o.assignedTo.displayName}
-                            </div>
-                          )}
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                          <span className="font-bold text-purple-700">💰 {Number(o.amount).toFixed(2)} ₼</span>
+                          <span className="text-gray-700">
+                            👤 {o.assignedTo ? (o.assignedToId === myId ? "Siz" : o.assignedTo.displayName) : "Heç kim"}
+                          </span>
                         </div>
                       </div>
-                    </div>
-                    
-                    {o.photoUrl && (
-                      <div className="w-28 flex-shrink-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image */}
-                        <img
-                          src={o.photoUrl}
-                          alt="Order photo"
-                          className="w-full h-full object-cover"
-                        />
+                      {o.photoUrl && (
+                        <div className="w-24 flex-shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image */}
+                          <img src={o.photoUrl} alt="Nümunə şəkil" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </Link>
+                    {canTake && !o.assignedToId && (
+                      <div className="border-t border-black/10 p-2">
+                        <AssignButton orderId={o.id} onAssigned={() => fetchOrders(selectedDate, true)} />
                       </div>
                     )}
                   </div>
-                </Link>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </section>
       </div>
