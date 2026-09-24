@@ -68,8 +68,49 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+/*
+ * Tailwind 4 only generates utilities (bg-*, text-*, border-*...) for colors
+ * registered in @theme; tailwind.config.ts is not loaded. Without this block
+ * classes like bg-cosmic-purple or border-space-border produced no CSS at all
+ * (white-on-white buttons, black default borders, uncoloured error text).
+ */
+@theme inline {
+  --color-space-bg-base: var(--color-bg-primary);
+  --color-space-surface: var(--color-surface);
+  --color-space-surface-light: var(--color-surface-hover);
+  --color-space-border: var(--color-border);
+  --color-space-text-primary: var(--color-text-primary);
+  --color-space-text-secondary: var(--color-text-secondary);
+  --color-space-text-muted: var(--color-text-muted);
+
+  --color-brand: var(--color-brand-600);
+  --color-brand-50: #F8F7FF;
+  --color-brand-100: #F1EFFE;
+  --color-brand-200: #E4E0FE;
+  --color-brand-300: #D1CCFD;
+  --color-brand-400: #B8ACFC;
+  --color-brand-500: #8B5CF6;
+  --color-brand-600: #7C3AED;
+  --color-brand-700: #6D28D9;
+  --color-brand-800: #5B21B6;
+  --color-brand-900: #4C1D95;
+  --color-brand-primary: var(--color-brand-600);
+  --color-brand-primary-hover: var(--color-brand-700);
+  --color-brand-primary-light: var(--color-brand-400);
+
+  /* Shop brand (same values as the Button component). */
+  --color-cosmic-purple: #6E1075;
+  --color-cosmic-purple-light: #C743DA;
+  --color-cosmic-red: #B91C1C;
+  --color-cosmic-red-light: #FEE2E2;
+  --color-cosmic-green: #047857;
+  --color-cosmic-green-light: #D1FAE5;
+  --color-cosmic-orange: #C2410C;
+  --color-cosmic-orange-light: #FFEDD5;
+}
+
 @layer base {
-  html, body { 
+  html, body {
     min-height: 100%; 
     overflow-x: hidden;
     width: 100%;
