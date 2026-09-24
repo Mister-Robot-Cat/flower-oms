@@ -22,7 +22,7 @@ type PaymentRow = {
   createdBy: string;
 };
 
-type Mode = null | "mixed" | "debt";
+type Mode = null | "cash" | "card" | "mixed" | "debt";
 
 const STATE_STYLES: Record<PaymentState, string> = {
   PAID: "bg-emerald-100 text-emerald-800 border-emerald-300",
@@ -161,7 +161,10 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
           <button
             type="button"
             disabled={busy}
-            onClick={() => submit({ cash: due }, "Nağd ödəniş qeydə alındı")}
+            onClick={() => {
+              setMode("cash");
+              setError(null);
+            }}
             className="w-full py-4 px-6 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold text-lg rounded-xl transition-colors"
           >
             💵 Nağd ödəniş ({formatAzn(due)})
@@ -169,7 +172,10 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
           <button
             type="button"
             disabled={busy}
-            onClick={() => submit({ card: due }, "Kart ödənişi qeydə alındı")}
+            onClick={() => {
+              setMode("card");
+              setError(null);
+            }}
             className="w-full py-4 px-6 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-bold text-lg rounded-xl transition-colors"
           >
             💳 Kart ilə ödəniş ({formatAzn(due)})
@@ -196,6 +202,40 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
           >
             📝 Borc
           </button>
+        </div>
+      )}
+
+      {(mode === "cash" || mode === "card") && (
+        // Second step, so an accidental tap never records money.
+        <div
+          className={`space-y-3 rounded-xl border-2 p-4 ${
+            mode === "cash" ? "border-green-300 bg-green-50" : "border-blue-300 bg-blue-50"
+          }`}
+        >
+          <div className="text-center">
+            <div className="text-sm text-gray-700">{mode === "cash" ? "💵 Nağd" : "💳 Kart"} ilə alındı?</div>
+            <div className="text-3xl font-bold text-gray-900">{formatAzn(due)}</div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                submit(
+                  mode === "cash" ? { cash: due } : { card: due },
+                  mode === "cash" ? "Nağd ödəniş qeydə alındı" : "Kart ödənişi qeydə alındı",
+                )
+              }
+              className={`flex-1 py-4 px-4 disabled:opacity-50 text-white font-bold text-lg rounded-xl ${
+                mode === "cash" ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              {busy ? "Gözləyin..." : "Təsdiqlə"}
+            </button>
+            <button type="button" disabled={busy} onClick={() => setMode(null)} className="py-4 px-5 bg-gray-200 hover:bg-gray-300 rounded-xl font-semibold">
+              Geri
+            </button>
+          </div>
         </div>
       )}
 
