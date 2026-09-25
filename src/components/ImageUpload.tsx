@@ -117,7 +117,7 @@ export default function ImageUpload({
       )}
 
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md bg-error-bg border border-error/30 px-4 py-3 text-sm text-error">{error}</div>
       )}
 
       {existingImages.length > 0 && (

@@ -7,7 +7,7 @@ import Button from "@/app/ui/Button";
 import PaymentPanel from "@/components/PaymentPanel";
 import UnpaidCloseDialog from "@/components/UnpaidCloseDialog";
 import { requestStatus } from "@/lib/status-client";
-import { STATUS_LABELS, formatDayMonthAz, type OrderStatusValue } from "@/lib/order-shared";
+import { STATUS_LABELS, formatDayMonthAz, ribbonStyle, type OrderStatusValue } from "@/lib/order-shared";
 
 type UnitType = "STEM" | "BUNCH" | "BOX";
 
@@ -242,77 +242,77 @@ export default function PrepOrder({
   );
 
   return (
-    <div className="min-h-screen bg-cosmic-gradient py-8 px-3">
-      <div className="mx-auto max-w-6xl rounded-xl bg-space-surface p-4 sm:p-6 shadow-xl border border-space-border">
-        {/* Main info in large font */}
-        <div className="mb-6 p-6 bg-white rounded-xl border-2 border-gray-300">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div className="text-lg font-extrabold text-gray-500">#{order.orderNumber}</div>
-            <div className="inline-flex rounded-lg bg-purple-100 border border-purple-300 px-3 py-1 text-sm font-bold text-purple-900">
-              {STATUS_LABELS[order.status]}
-            </div>
+    <div className="mx-auto max-w-6xl px-4 py-5 sm:py-8">
+      <div>
+        {/* The order itself, drawn as its paper tag. */}
+        <div className="tag-card mb-6 !py-5 !pr-5" style={ribbonStyle(order.status)}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-display text-base font-bold text-plum">#{order.orderNumber}</span>
+            <span className="status-pill">{STATUS_LABELS[order.status]}</span>
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-3">
-            📅 {formatDayMonthAz(order.deliveryDate)}
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-3">
+            <span className="font-display text-4xl font-bold text-plum-deep">{order.deliveryTime}</span>
+            <span className="text-lg font-semibold text-ink-soft">{formatDayMonthAz(order.deliveryDate)}</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900 mb-4">🕒 {order.deliveryTime}</div>
-          <div className="text-2xl font-bold text-gray-900 mb-3">👤 {order.customerFullName}</div>
-          <div className="text-xl font-semibold text-gray-700 mb-3">
-            📞 <a href={`tel:${order.customerPhone}`} className="hover:underline">{order.customerPhone}</a>
-          </div>
-          <div className="text-lg font-medium text-gray-700 mb-3">
-            {order.orderType === "DELIVERY" ? "🚚 Çatdırılma" : "🏪 Mağazadan götürmə"}
-            {order.orderType === "DELIVERY" && order.deliveryAddress && <div className="mt-1">📍 {order.deliveryAddress}</div>}
+          <div className="mt-2 text-2xl font-bold text-ink">{order.customerFullName}</div>
+          <a href={`tel:${order.customerPhone}`} className="mt-1 inline-block text-lg font-semibold text-plum underline-offset-4 hover:underline">
+            {order.customerPhone}
+          </a>
+          <div className="mt-3 text-base text-ink-soft">
+            {order.orderType === "DELIVERY" ? "Çatdırılma" : "Mağazadan götürmə"}
+            {order.orderType === "DELIVERY" && order.deliveryAddress && <div className="mt-0.5 font-semibold text-ink">{order.deliveryAddress}</div>}
           </div>
           {order.notes && (
-            <div className="mb-4 rounded-lg bg-yellow-50 border-2 border-yellow-300 p-4 text-lg text-gray-900 whitespace-pre-wrap">
-              📝 {order.notes}
-            </div>
+            <div className="mt-4 rounded-xl border-l-4 border-orchid bg-fill px-4 py-3 text-lg text-ink whitespace-pre-wrap">{order.notes}</div>
           )}
-          <div className="text-lg text-gray-700 mb-4">
-            👩‍🎨 Florist: <b>{order.assignedToName ?? "təyin edilməyib"}</b>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+            <div className="text-sm text-ink-soft">
+              Florist: <b className="text-ink">{order.assignedToName ?? "təyin edilməyib"}</b>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-display text-xl font-bold text-plum-deep">{Number(order.amount).toFixed(2)} ₼</span>
+              <Button onClick={() => setShowPaymentModal(true)} variant="secondary" size="sm">
+                Ödəniş
+              </Button>
+            </div>
           </div>
-          <div className="text-xl font-bold text-purple-700 mb-4">💰 {Number(order.amount).toFixed(2)} ₼</div>
-          <Button onClick={() => setShowPaymentModal(true)} variant="primary" className="text-base px-5 py-2">
-            💳 Ödəniş idarə et
-          </Button>
         </div>
 
         {assignedToOther && (
-          <div className="mb-6 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-900 font-semibold">
+          <div className="mb-6 rounded-xl bg-warning-bg p-4 font-semibold text-warning">
             Bu sifariş {order.assignedToName} tərəfindən hazırlanır. Siz yalnız baxa bilərsiniz.
           </div>
         )}
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 border border-red-300 px-4 py-3 text-red-700">❌ {error}</div>
+          <div role="alert" className="mb-4 rounded-xl bg-error-bg px-4 py-3 font-semibold text-error">{error}</div>
         )}
         {message && (
-          <div className="mb-4 rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-green-700">✅ {message}</div>
+          <div role="status" className="mb-4 rounded-xl bg-success-bg px-4 py-3 font-semibold text-success">{message}</div>
         )}
 
         {referencePhotos.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-4 text-blue-900">📋 Nümunə şəkillər (sifarişdən)</h2>
-            {photoGrid(referencePhotos, "border-blue-300 hover:border-blue-500")}
+            <h2 className="mb-3 text-xl text-plum-deep">Müştərinin nümunəsi</h2>
+            {photoGrid(referencePhotos, "border-line hover:border-orchid")}
           </div>
         )}
 
         {!readOnly && (
           <div className="grid gap-6 lg:grid-cols-2 mb-6">
             {/* Flowers used */}
-            <div className="p-5 bg-white rounded-xl border-2 border-gray-200">
-              <h2 className="text-2xl font-bold mb-3 text-gray-900">🌷 İstifadə olunan çiçəklər</h2>
+            <div className="panel p-5">
+              <h2 className="mb-3 text-xl text-plum-deep">İstifadə olunan çiçəklər</h2>
               <Input className="mb-3" placeholder="Axtar..." value={query} onChange={(e) => setQuery(e.target.value)} />
-              <div className="max-h-96 overflow-auto rounded-lg border border-gray-200 divide-y divide-gray-200">
+              <div className="max-h-96 overflow-auto rounded-lg border border-line divide-y divide-gray-200">
                 {filteredFlowers.map((f) => {
                   const qty = usages.find((u) => u.flowerId === f.id)?.quantity ?? 0;
                   const low = f.stockQuantity <= f.lowStockLevel;
                   return (
-                    <div key={f.id} className={`p-3 flex items-center justify-between gap-3 ${qty > 0 ? "bg-purple-50" : ""}`}>
+                    <div key={f.id} className={`p-3 flex items-center justify-between gap-3 ${qty > 0 ? "bg-fill" : ""}`}>
                       <div>
-                        <div className="font-semibold text-gray-900">{f.name}</div>
-                        <div className={`text-xs ${low ? "text-red-600 font-semibold" : "text-gray-500"}`}>
+                        <div className="font-semibold text-ink">{f.name}</div>
+                        <div className={`text-xs ${low ? "text-error font-semibold" : "text-ink-soft"}`}>
                           Anbarda: {f.stockQuantity} {UNIT_LABELS[f.unitType]}
                           {low ? " (az qalıb)" : ""}
                         </div>
@@ -321,7 +321,7 @@ export default function PrepOrder({
                         <button
                           type="button"
                           onClick={() => setQty(f, qty - 1)}
-                          className="h-10 w-10 rounded-lg bg-gray-100 hover:bg-gray-200 text-xl font-bold"
+                          className="h-10 w-10 rounded-lg bg-fill hover:bg-fill text-xl font-bold"
                           aria-label="Azalt"
                         >
                           −
@@ -332,12 +332,12 @@ export default function PrepOrder({
                           inputMode="numeric"
                           value={qty}
                           onChange={(e) => setQty(f, Number(e.target.value))}
-                          className="h-10 w-16 rounded-lg border border-gray-300 text-center text-lg"
+                          className="h-10 w-16 rounded-lg border border-line text-center text-lg"
                         />
                         <button
                           type="button"
                           onClick={() => setQty(f, qty + 1)}
-                          className="h-10 w-10 rounded-lg bg-gray-100 hover:bg-gray-200 text-xl font-bold"
+                          className="h-10 w-10 rounded-lg bg-fill hover:bg-fill text-xl font-bold"
                           aria-label="Artır"
                         >
                           +
@@ -346,7 +346,7 @@ export default function PrepOrder({
                     </div>
                   );
                 })}
-                {filteredFlowers.length === 0 && <div className="p-3 text-sm text-gray-500">Nəticə yoxdur</div>}
+                {filteredFlowers.length === 0 && <div className="p-3 text-sm text-ink-soft">Nəticə yoxdur</div>}
               </div>
               <Button onClick={saveUsage} disabled={savingUsage || !usageChanged} variant="secondary" className="mt-3 w-full">
                 {savingUsage ? "Yazılır..." : usageChanged ? "Çiçəkləri yadda saxla" : "Dəyişiklik yoxdur"}
@@ -354,15 +354,15 @@ export default function PrepOrder({
             </div>
 
             {/* Status */}
-            <div className="p-5 bg-white rounded-xl border-2 border-gray-200">
-              <h2 className="text-2xl font-bold mb-3 text-gray-900">📌 Status</h2>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Hazırlıq qeydi (istəyə görə)</label>
+            <div className="panel p-5">
+              <h2 className="mb-3 text-xl text-plum-deep">Status</h2>
+              <label className="block text-sm font-medium mb-1 text-ink-soft">Hazırlıq qeydi (istəyə görə)</label>
               <textarea
                 value={prepNotes}
                 onChange={(e) => setPrepNotes(e.target.value)}
                 rows={3}
                 maxLength={5000}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 mb-4"
+                className="w-full rounded-xl border-[1.5px] border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus:outline-none focus:ring-4 focus:ring-orchid/15 focus:border-orchid mb-4"
               />
               <div className="grid gap-3">
                 {order.status === "NEW" && (
@@ -370,9 +370,9 @@ export default function PrepOrder({
                     type="button"
                     disabled={!!statusLoading}
                     onClick={() => setStatus("IN_PROGRESS")}
-                    className="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-lg font-bold"
+                    className="w-full py-4 rounded-xl border-[1.5px] border-line bg-surface hover:border-orchid disabled:opacity-50 text-plum-deep text-lg font-bold"
                   >
-                    {statusLoading === "IN_PROGRESS" ? "Gözləyin..." : "🛠️ Hazırlamağa başla"}
+                    {statusLoading === "IN_PROGRESS" ? "Gözləyin..." : "Hazırlamağa başla"}
                   </button>
                 )}
                 {(order.status === "NEW" || order.status === "IN_PROGRESS") && (
@@ -380,9 +380,9 @@ export default function PrepOrder({
                     type="button"
                     disabled={!!statusLoading}
                     onClick={() => setStatus("READY")}
-                    className="w-full py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-lg font-bold"
+                    className="w-full py-4 rounded-xl bg-plum hover:bg-plum-deep disabled:opacity-50 text-white text-lg font-bold"
                   >
-                    {statusLoading === "READY" ? "Gözləyin..." : "✅ Buket hazırdır"}
+                    {statusLoading === "READY" ? "Gözləyin..." : "Buket hazırdır"}
                   </button>
                 )}
                 {order.status === "READY" && (
@@ -391,17 +391,17 @@ export default function PrepOrder({
                       type="button"
                       disabled={!!statusLoading}
                       onClick={() => setStatus(order.orderType === "DELIVERY" ? "OUT_FOR_DELIVERY" : "PICKUP")}
-                      className="w-full py-4 rounded-xl bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-lg font-bold"
+                      className="w-full py-4 rounded-xl bg-plum hover:bg-plum-deep disabled:opacity-50 text-white text-lg font-bold"
                     >
-                      {order.orderType === "DELIVERY" ? "🚚 Kuryerə verildi" : "🏪 Müştəri gözlənilir"}
+                      {order.orderType === "DELIVERY" ? "Kuryerə verildi" : "Müştəri gözlənilir"}
                     </button>
                     <button
                       type="button"
                       disabled={!!statusLoading}
                       onClick={() => setStatus("IN_PROGRESS")}
-                      className="w-full py-3 rounded-xl bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-800 font-semibold"
+                      className="w-full py-3 rounded-xl bg-fill hover:bg-line disabled:opacity-50 text-ink font-semibold"
                     >
-                      ↩️ Yenidən hazırlanır
+                      Yenidən hazırlanır
                     </button>
                   </>
                 )}
@@ -410,13 +410,13 @@ export default function PrepOrder({
                     type="button"
                     disabled={!!statusLoading}
                     onClick={() => setStatus("COMPLETED")}
-                    className="w-full py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-lg font-bold"
+                    className="w-full py-4 rounded-xl bg-plum hover:bg-plum-deep disabled:opacity-50 text-white text-lg font-bold"
                   >
-                    🎉 Tamamlandı (müştəriyə çatdı)
+                    Tamamlandı: müştəriyə çatdı
                   </button>
                 )}
                 {order.status === "COMPLETED" && (
-                  <div className="rounded-xl bg-emerald-50 border border-emerald-300 p-4 text-emerald-800 font-semibold">
+                  <div className="rounded-xl bg-success-bg border border-success/30 p-4 text-success font-semibold">
                     Sifariş tamamlanıb
                   </div>
                 )}
@@ -426,20 +426,20 @@ export default function PrepOrder({
         )}
 
         {floristPhotos.length > 0 && (
-          <div className="mb-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-300">
-            <h2 className="text-2xl font-bold mb-4 text-green-900">🌸 Hazır buketin şəkilləri</h2>
+          <div className="panel mb-6 p-5">
+            <h2 className="mb-3 text-xl text-plum-deep">Hazır buket</h2>
             {photoGrid(floristPhotos, "border-green-400 hover:border-green-600")}
           </div>
         )}
 
         {!readOnly && (
-          <div className="mt-8 p-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl border-2 border-purple-300 shadow-lg">
-            <h2 className="text-2xl font-bold mb-4 text-purple-900 flex items-center gap-2">📸 Hazır buketin şəkillərini əlavə et</h2>
+          <div className="panel mt-6 p-5">
+            <h2 className="mb-3 text-xl text-plum-deep">Buketin şəklini çəkin</h2>
             <label className="block w-full cursor-pointer">
-              <div className="border-2 border-dashed border-purple-400 rounded-xl p-8 text-center bg-white hover:bg-purple-50 transition-colors">
+              <div className="rounded-2xl border-2 border-dashed border-line-strong p-8 text-center hover:border-orchid hover:bg-fill transition-colors">
                 <div className="text-4xl mb-3">📷</div>
-                <div className="text-lg font-semibold text-purple-900 mb-2">{uploading ? "Yüklənir..." : "Şəkil seçin"}</div>
-                <div className="text-sm text-gray-600">JPG, PNG, WEBP · bir və ya bir neçə şəkil (max 10MB)</div>
+                <div className="text-lg font-semibold text-plum-deep mb-1">{uploading ? "Yüklənir..." : "Şəkil seçin"}</div>
+                <div className="text-sm text-ink-soft">JPG, PNG, WEBP · bir və ya bir neçə şəkil (max 10MB)</div>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
@@ -470,11 +470,11 @@ export default function PrepOrder({
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-2xl font-bold mb-4 text-gray-900">💳 Ödəniş idarəsi</h2>
+              <h2 className="mb-4 text-xl text-plum-deep">Ödəniş</h2>
               <PaymentPanel orderId={order.id} canCancel={isAdmin} />
               <button
                 onClick={() => setShowPaymentModal(false)}
-                className="mt-4 w-full py-3 px-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition-colors"
+                className="mt-4 w-full py-3 px-6 bg-fill hover:bg-line text-ink font-semibold rounded-xl transition-colors"
               >
                 Bağla
               </button>

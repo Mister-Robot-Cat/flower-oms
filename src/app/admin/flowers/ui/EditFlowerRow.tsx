@@ -83,7 +83,7 @@ export default function EditFlowerRow({ flower }: { flower: FlowerData }) {
         <Input type="text" value={e.name} onChange={(ev) => e.setName(ev.target.value)} />
       </td>
       <td className="px-3 py-2">
-        <Select value={e.unitType} onChange={(ev) => e.setUnitType(toUnit(ev.target.value))}>
+        <Select value={e.unitType} onChange={(ev) => e.setUnitType(toUnit(ev.target.value))} className="min-w-32">
           {UNIT_OPTIONS.map((u) => (
             <option key={u.value} value={u.value}>{u.label}</option>
           ))}

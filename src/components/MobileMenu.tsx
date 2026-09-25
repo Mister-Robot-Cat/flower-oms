@@ -2,148 +2,62 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { isActive, navItems } from "@/app/ui/nav-items";
+import LogoutButton from "@/app/ui/LogoutButton";
 
-interface MobileMenuProps {
-  role?: string;
-  isAuthenticated: boolean;
-}
-
-export default function MobileMenu({ role, isAuthenticated }: MobileMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleMenu = () => setIsOpen(!isOpen);
-  const closeMenu = () => setIsOpen(false);
-
-  if (!isAuthenticated) return null;
+export default function MobileMenu({ role, name }: { role?: string; name: string }) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const items = [{ href: "/dashboard", label: "Panel" }, ...navItems(role), { href: "/profile", label: "Profil" }];
 
   return (
-    <>
-      {/* Burger Button */}
+    <div className="lg:hidden">
       <button
-        onClick={toggleMenu}
-        className="md:hidden flex flex-col gap-1.5 p-2 rounded-lg hover:bg-[#F3F1F2] transition-colors"
-        aria-label="Menu"
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="mobile-menu"
+        aria-label={open ? "Menyunu bağla" : "Menyunu aç"}
+        className="grid h-10 w-10 place-items-center rounded-full border-[1.5px] border-line bg-surface"
       >
-        <span className={`block h-0.5 w-6 bg-[#501257] transition-transform ${isOpen ? "rotate-45 translate-y-2" : ""}`}></span>
-        <span className={`block h-0.5 w-6 bg-[#501257] transition-opacity ${isOpen ? "opacity-0" : ""}`}></span>
-        <span className={`block h-0.5 w-6 bg-[#501257] transition-transform ${isOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
+        <span className="relative block h-3.5 w-5">
+          <span className={`absolute left-0 top-0 h-0.5 w-5 rounded bg-plum-deep transition-transform ${open ? "translate-y-1.5 rotate-45" : ""}`} />
+          <span className={`absolute left-0 top-1.5 h-0.5 w-5 rounded bg-plum-deep transition-opacity ${open ? "opacity-0" : ""}`} />
+          <span className={`absolute left-0 top-3 h-0.5 w-5 rounded bg-plum-deep transition-transform ${open ? "-translate-y-1.5 -rotate-45" : ""}`} />
+        </span>
       </button>
 
-      {/* Mobile Menu Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-[45] md:hidden"
-          onClick={closeMenu}
-        />
-      )}
+      {open && <div className="fixed inset-0 top-16 z-40 bg-plum-deep/30" onClick={() => setOpen(false)} />}
 
-      {/* Mobile Menu Panel */}
+      {/* invisible (not only off-screen) when closed, so it never widens the page */}
       <div
-        className={`fixed top-16 right-0 bottom-0 w-72 sm:w-80 border-l border-[#C743DA]/30 shadow-2xl z-50 transform transition-transform duration-300 md:hidden bg-white/95 backdrop-blur-xl ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        id="mobile-menu"
+        className={`fixed right-0 top-16 bottom-0 z-50 w-72 max-w-[85vw] border-l border-line bg-paper p-4 transition-transform duration-200 ${
+          open ? "visible translate-x-0" : "invisible translate-x-full"
         }`}
       >
-        <nav className="flex flex-col p-4 gap-2 h-full overflow-y-auto">
-          <Link
-            href="/dashboard"
-            onClick={closeMenu}
-            className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-          >
-            🏠 Panel
-          </Link>
-
-          {(role === "ADMIN" || role === "CALL_CENTER") && (
-            <Link
-              href="/orders"
-              onClick={closeMenu}
-              className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-            >
-              📦 Sifarişlər
-            </Link>
-          )}
-
-          {role === "CALL_CENTER" && (
-            <Link
-              href="/callcenter"
-              onClick={closeMenu}
-              className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-            >
-              📞 Zəng mərkəzi
-            </Link>
-          )}
-
-          {role === "FLORIST" && (
-            <Link
-              href="/florist"
-              onClick={closeMenu}
-              className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-            >
-              🌸 Florist paneli
-            </Link>
-          )}
-
-          {(role === "ADMIN" || role === "CALL_CENTER") && (
-            <Link
-              href="/customers"
-              onClick={closeMenu}
-              className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-            >
-              👥 Müştərilər
-            </Link>
-          )}
-
-          {role === "ADMIN" && (
-            <>
+        <div className="mb-3 px-3 text-sm text-ink-muted">{name}</div>
+        <nav className="flex flex-col gap-1" aria-label="Menyu">
+          {items.map((item) => {
+            const active = isActive(pathname, item.href);
+            return (
               <Link
-                href="/admin/users"
-                onClick={closeMenu}
-                className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`rounded-xl px-3 py-3 text-base font-semibold ${
+                  active ? "bg-plum text-white" : "text-ink hover:bg-fill"
+                }`}
               >
-                👥 İstifadəçilər
+                {item.label}
               </Link>
-              <Link
-                href="/admin/flowers"
-                onClick={closeMenu}
-                className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-              >
-                🏪 Anbar
-              </Link>
-              <Link
-                href="/admin/reports/performance"
-                onClick={closeMenu}
-                className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-              >
-                📊 Performans
-              </Link>
-              <Link
-                href="/admin/reports/sales"
-                onClick={closeMenu}
-                className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-              >
-                💰 Satışlar
-              </Link>
-            </>
-          )}
-
-          <Link
-            href="/profile"
-            onClick={closeMenu}
-            className="px-4 py-3 rounded-xl text-[#501257] hover:bg-[#F3F1F2] hover:text-[#631974] transition-colors font-medium"
-          >
-            👤 Profil
-          </Link>
-
-          <div className="border-t border-[#C743DA]/30 my-2"></div>
-
-          <Link
-            href="/login"
-            onClick={closeMenu}
-            className="px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors font-medium"
-          >
-            🚪 Çıxış
-          </Link>
+            );
+          })}
         </nav>
+        <LogoutButton className="mt-4 w-full py-3" />
       </div>
-    </>
+    </div>
   );
 }

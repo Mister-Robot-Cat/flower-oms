@@ -52,23 +52,23 @@ export default async function UsersManagementPage() {
           {/* Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="rounded-lg bg-white border border-space-border p-4 shadow-sm">
-              <div className="text-2xl font-bold text-space-text-primary">{stats.total}</div>
+              <div className="font-display text-2xl font-bold text-plum-deep">{stats.total}</div>
               <div className="text-xs text-space-text-secondary mt-1">Ümumi</div>
             </div>
             <div className="rounded-lg bg-white border border-space-border p-4 shadow-sm">
-              <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+              <div className="font-display text-2xl font-bold text-plum-deep">{stats.active}</div>
               <div className="text-xs text-space-text-secondary mt-1">Aktiv</div>
             </div>
             <div className="rounded-lg bg-white border border-space-border p-4 shadow-sm">
-              <div className="text-2xl font-bold text-purple-600">{stats.admins}</div>
+              <div className="font-display text-2xl font-bold text-plum-deep">{stats.admins}</div>
               <div className="text-xs text-space-text-secondary mt-1">Admin</div>
             </div>
             <div className="rounded-lg bg-white border border-space-border p-4 shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">{stats.operators}</div>
+              <div className="font-display text-2xl font-bold text-plum-deep">{stats.operators}</div>
               <div className="text-xs text-space-text-secondary mt-1">Operator</div>
             </div>
             <div className="rounded-lg bg-white border border-space-border p-4 shadow-sm">
-              <div className="text-2xl font-bold text-amber-600">{stats.florists}</div>
+              <div className="font-display text-2xl font-bold text-plum-deep">{stats.florists}</div>
               <div className="text-xs text-space-text-secondary mt-1">Florist</div>
             </div>
           </div>

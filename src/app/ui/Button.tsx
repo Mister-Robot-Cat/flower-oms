@@ -22,27 +22,22 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    "inline-flex items-center justify-center font-normal transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden";
-  
+    "inline-flex items-center justify-center font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orchid disabled:opacity-50 disabled:cursor-not-allowed";
+
   const sizeStyles: Record<Size, string> = {
-    sm: "text-xs px-3 py-1.5 leading-4 rounded-lg gap-2",
-    md: "text-sm px-4 py-2.5 leading-5 rounded-xl gap-2",
-    lg: "text-base px-6 py-3 leading-6 rounded-xl gap-3",
+    sm: "text-sm px-3.5 py-1.5 rounded-full gap-1.5",
+    md: "text-[15px] px-5 py-2.5 rounded-xl gap-2",
+    lg: "text-base px-6 py-3.5 rounded-xl gap-2",
   };
 
+  // Plum is the main action, orchid the florist's quick action, white the quiet one.
   const variantStyles: Record<Variant, string> = {
-    primary:
-      "bg-[#6E1075] text-white hover:bg-[#631974] focus:ring-2 focus:ring-[#6E1075]/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
-    secondary:
-      "bg-white text-[#501257] border border-[#C743DA]/30 hover:bg-[#F3F1F2] hover:border-[#631974] focus:ring-2 focus:ring-[#C743DA]/20 disabled:opacity-50 transition-all duration-200",
-    destructive:
-      "bg-red-500 text-white hover:bg-red-600 focus:ring-2 focus:ring-red-500/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
-    ghost:
-      "text-[#631974] hover:bg-[#F3F1F2] hover:text-[#501257] focus:ring-2 focus:ring-[#C743DA]/20 disabled:opacity-50 transition-all duration-200",
-    success:
-      "bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-500/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
-    accent:
-      "bg-[#C743DA] text-white hover:bg-[#6E1075] focus:ring-2 focus:ring-[#C743DA]/20 disabled:opacity-50 shadow-sm hover:shadow-md transition-all duration-200",
+    primary: "bg-plum text-white hover:bg-plum-deep",
+    accent: "bg-orchid text-white hover:bg-plum",
+    secondary: "bg-surface text-plum-deep border-[1.5px] border-line hover:border-orchid",
+    ghost: "text-plum hover:bg-fill",
+    success: "bg-success text-white hover:brightness-95",
+    destructive: "bg-error text-white hover:brightness-95",
   };
 
   return (

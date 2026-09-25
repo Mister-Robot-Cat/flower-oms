@@ -1,378 +1,226 @@
 @import "tailwindcss";
 
-:root {
-  /* Modern design system with sophisticated colors */
-  --color-bg-primary: #FAFBFC;
-  --color-bg-secondary: #FFFFFF;
-  --color-bg-tertiary: #F8FAFC;
-  --color-surface: #FFFFFF;
-  --color-surface-elevated: #FFFFFF;
-  --color-surface-hover: #F1F5F9;
-  --color-border: #E2E8F0;
-  --color-border-subtle: #F1F5F9;
-  --color-border-strong: #CBD5E1;
-  
-  /* Modern text hierarchy */
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #64748B;
-  --color-text-muted: #94A3B8;
-  --color-text-inverse: #FFFFFF;
-  
-  /* Brand colors - modern purple gradient theme */
-  --color-brand-50: #F8F7FF;
-  --color-brand-100: #F1EFFE;
-  --color-brand-200: #E4E0FE;
-  --color-brand-300: #D1CCFD;
-  --color-brand-400: #B8ACFC;
-  --color-brand-500: #8B5CF6;
-  --color-brand-600: #7C3AED;
-  --color-brand-700: #6D28D9;
-  --color-brand-800: #5B21B6;
-  --color-brand-900: #4C1D95;
-  
-  /* Semantic colors with modern palette */
-  --color-success: #059669;
-  --color-success-light: #D1FAE5;
-  --color-success-bg: #ECFDF5;
-  --color-warning: #D97706;
-  --color-warning-light: #FEF3C7;
-  --color-warning-bg: #FFFBEB;
-  --color-error: #DC2626;
-  --color-error-light: #FEE2E2;
-  --color-error-bg: #FEF2F2;
-  --color-info: #2563EB;
-  --color-info-light: #DBEAFE;
-  --color-info-bg: #EFF6FF;
-  
-  /* Accent colors */
-  --color-accent-purple: #8B5CF6;
-  --color-accent-pink: #EC4899;
-  --color-accent-blue: #3B82F6;
-  --color-accent-emerald: #10B981;
-  
-  /* Legacy compatibility */
-  --color-space-bg-base: var(--color-bg-primary);
-  --color-space-surface: var(--color-surface);
-  --color-space-surface-light: var(--color-surface-hover);
-  --color-space-border: var(--color-border);
-  --color-space-text-primary: var(--color-text-primary);
-  --color-space-text-secondary: var(--color-text-secondary);
-  --color-brand-primary: var(--color-brand-600);
-  --color-brand-primary-hover: var(--color-brand-700);
-  --color-brand-primary-light: var(--color-brand-400);
-  
-  /* Modern typography */
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-outfit);
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-}
-
 /*
- * Tailwind 4 only generates utilities (bg-*, text-*, border-*...) for colors
- * registered in @theme; tailwind.config.ts is not loaded. Without this block
- * classes like bg-cosmic-purple or border-space-border produced no CSS at all
- * (white-on-white buttons, black default borders, uncoloured error text).
+ * "Etiket" design system.
+ * Every order is drawn like the paper tag a florist ties to a bouquet:
+ * a punched hole and a coloured ribbon (the status) on the left edge.
+ * The rest of the interface stays quiet: lilac paper, white panels, thin lines.
+ *
+ * Tailwind 4 only generates utilities for colours declared in @theme
+ * (tailwind.config.ts is not loaded), so every token used in class names
+ * lives here. The space-*, cosmic-* and brand-* names are kept because the
+ * pages already use them; they now point at the Etiket palette.
  */
 @theme inline {
-  --color-space-bg-base: var(--color-bg-primary);
+  /* Core palette */
+  --color-paper: #F7F2F6;
+  --color-surface: #FFFFFF;
+  --color-fill: #F3ECF3;
+  --color-line: #E6D8E7;
+  --color-line-strong: #D2BED5;
+  --color-ink: #2B1230;
+  --color-ink-soft: #6E5873;
+  --color-ink-muted: #8C7690;
+  --color-plum: #6E1075;
+  --color-plum-deep: #501257;
+  --color-orchid: #C743DA;
+
+  /* Order status ribbons */
+  --color-st-new: #D2263B;
+  --color-st-progress: #C743DA;
+  --color-st-ready: #1F8A5B;
+  --color-st-away: #6E1075;
+  --color-st-done: #8C7690;
+
+  /* Feedback */
+  --color-success: #1F8A5B;
+  --color-success-bg: #E6F4EC;
+  --color-warning: #B45309;
+  --color-warning-bg: #FDF1E3;
+  --color-error: #C21F35;
+  --color-error-bg: #FCE8EB;
+  --color-info: #6E1075;
+  --color-info-bg: #F5E6F6;
+
+  /* Names already used across the pages */
+  --color-space-bg: var(--color-paper);
+  --color-space-bg-base: var(--color-paper);
   --color-space-surface: var(--color-surface);
-  --color-space-surface-light: var(--color-surface-hover);
-  --color-space-border: var(--color-border);
-  --color-space-text-primary: var(--color-text-primary);
-  --color-space-text-secondary: var(--color-text-secondary);
-  --color-space-text-muted: var(--color-text-muted);
+  --color-space-surface-light: var(--color-fill);
+  --color-space-border: var(--color-line);
+  --color-space-text-primary: var(--color-ink);
+  --color-space-text-secondary: var(--color-ink-soft);
+  --color-space-text-muted: var(--color-ink-muted);
+  --color-surface-hover: var(--color-fill);
+  --color-border: var(--color-line);
+  --color-border-strong: var(--color-line-strong);
+  --color-text-primary: var(--color-ink);
+  --color-text-secondary: var(--color-ink-soft);
+  --color-text-muted: var(--color-ink-muted);
 
-  --color-brand: var(--color-brand-600);
-  --color-brand-50: #F8F7FF;
-  --color-brand-100: #F1EFFE;
-  --color-brand-200: #E4E0FE;
-  --color-brand-300: #D1CCFD;
-  --color-brand-400: #B8ACFC;
-  --color-brand-500: #8B5CF6;
-  --color-brand-600: #7C3AED;
-  --color-brand-700: #6D28D9;
-  --color-brand-800: #5B21B6;
-  --color-brand-900: #4C1D95;
-  --color-brand-primary: var(--color-brand-600);
-  --color-brand-primary-hover: var(--color-brand-700);
-  --color-brand-primary-light: var(--color-brand-400);
+  --color-brand: var(--color-plum);
+  --color-brand-50: #FAF3FA;
+  --color-brand-200: #EBCDEF;
+  --color-brand-500: var(--color-orchid);
+  --color-brand-600: var(--color-plum);
+  --color-brand-primary: var(--color-plum);
+  --color-brand-primary-hover: var(--color-plum-deep);
 
-  /* Shop brand (same values as the Button component). The *-light shades are
-     used as text/hover colours, so they must stay readable on white. */
-  --color-cosmic-purple: #6E1075;
-  --color-cosmic-purple-light: #C743DA;
-  --color-cosmic-red: #B91C1C;
-  --color-cosmic-red-light: #EF4444;
-  --color-cosmic-green: #047857;
-  --color-cosmic-green-light: #10B981;
-  --color-cosmic-orange: #EA580C;
-  --color-cosmic-orange-light: #C2410C;
+  --color-cosmic-purple: var(--color-plum);
+  --color-cosmic-purple-light: var(--color-orchid);
+  --color-cosmic-red: var(--color-error);
+  --color-cosmic-red-light: #E0485D;
+  --color-cosmic-green: var(--color-success);
+  --color-cosmic-green-light: #2FA673;
+  --color-cosmic-orange: #D9620F;
+  --color-cosmic-orange-light: var(--color-warning);
+
+  /* Type: Unbounded for headings and numbers, Golos Text for everything else */
+  --font-sans: var(--font-golos), system-ui, sans-serif;
+  --font-display: var(--font-unbounded), var(--font-golos), system-ui, sans-serif;
+
+  --radius-tag: 6px 22px 22px 6px;
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   html, body {
-    min-height: 100%; 
+    min-height: 100%;
     overflow-x: hidden;
     width: 100%;
   }
-  
+
   body {
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    font-family: var(--font-clother), system-ui, -apple-system, sans-serif;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
     font-size: 16px;
-    font-weight: 400;
-    line-height: 1.6;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
-  /* Prevent horizontal scroll on all elements */
+
   * {
     max-width: 100%;
   }
-  
-  /* Responsive images and media */
+
+  /* Tailwind 4 draws bare border / divide-* in currentColor (near black here).
+     Own selector, so the optimizer does not merge it into preflight's "border: 0 solid". */
+  html *, html ::before, html ::after {
+    border-color: var(--color-line);
+  }
+
   img, video, iframe {
     max-width: 100%;
     height: auto;
   }
 
-  /* Minimalist font styling */
-  .font-clother {
-    font-family: var(--font-clother), system-ui, -apple-system, sans-serif;
-    font-weight: 400;
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--color-plum-deep);
   }
 
-  .font-display {
-    font-family: var(--font-clother), system-ui, -apple-system, sans-serif;
-    font-weight: 600;
+  h2, h3 {
+    font-weight: 700;
+    letter-spacing: -0.01em;
   }
-  
-  /* Modern focus styles */
+
   *:focus-visible {
-    outline: 2px solid var(--color-brand-500);
+    outline: 2px solid var(--color-orchid);
     outline-offset: 2px;
   }
-  
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* The signature element: an order drawn as a florist's paper tag.
+     Set the ribbon colour with --st (see statusRibbon() in order-shared). */
+  .tag-card {
+    --st: var(--color-line-strong);
+    position: relative;
+    display: block;
+    background: var(--color-surface);
+    border-radius: var(--radius-tag);
+    padding: 14px 16px 14px 34px;
+    box-shadow: 0 1px 0 var(--color-line), 0 10px 22px -18px rgb(80 18 87 / 0.55);
+  }
+  .tag-card::before {
+    /* punched hole */
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 2px var(--color-line);
+  }
+  .tag-card::after {
+    /* ribbon = status */
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    border-radius: 6px 0 0 6px;
+    background: var(--st);
+  }
+
+  /* Status pill with the ribbon colour as a tint. */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--st);
+    background: color-mix(in srgb, var(--st) 12%, white);
+    white-space: nowrap;
+  }
+
+  /* A plain page panel (white sheet on lilac paper). */
+  .panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 20px;
   }
 }
 
 @layer utilities {
-  /* Modern gradients */
-  .bg-gradient-brand {
-    background: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-700) 100%);
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
   }
-  
-  .bg-gradient-hero {
-    background: linear-gradient(135deg, var(--color-brand-50) 0%, var(--color-brand-100) 100%);
+
+  /* Legacy names still used by some pages. */
+  .bg-cosmic-gradient {
+    background: transparent;
   }
-  
-  .bg-gradient-card {
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-tertiary) 100%);
-  }
-  
-  /* Modern shadows */
-  .shadow-sm {
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  }
-  
-  .shadow-md {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  
-  .shadow-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  }
-  
-  .shadow-xl {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-  
-  .shadow-brand {
-    box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.15);
-  }
-  
-  .shadow-brand-lg {
-    box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.25);
-  }
-  
-  /* Glass morphism effects */
-  .glass {
-    backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  .glass-dark {
-    backdrop-filter: blur(12px);
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  /* Modern animations */
   .transition-all-smooth {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .hover-lift {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .hover-lift:hover {
-    transform: translateY(-2px);
-  }
-  
-  .hover-scale {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .hover-scale:hover {
-    transform: scale(1.02);
-  }
-  
-  /* Modern card styles */
-  .card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  }
-  
-  .card-hover {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  .card-hover:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transform: translateY(-1px);
+  .shadow-xl {
+    box-shadow: 0 18px 40px -30px rgb(80 18 87 / 0.45);
   }
-  
-  /* Component-specific classes */
-  .nav-link {
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
-    color: var(--color-text-secondary);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .nav-link:hover {
-    color: var(--color-text-primary);
-    background: var(--color-surface-hover);
-  }
-  
-  .btn-primary {
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-700) 100%);
-    color: white;
-    font-weight: 500;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .btn-primary:hover {
-    box-shadow: var(--shadow-brand);
-    transform: translateY(-2px);
-  }
-  
-  /* Legacy compatibility */
-  .bg-cosmic-gradient {
-    background: var(--color-bg-primary);
-  }
-  
-  .shadow-glow-purple {
-    box-shadow: var(--shadow-brand);
-  }
-  
-  .shadow-glow-pink {
-    box-shadow: var(--shadow-md);
-  }
-  
-  /* Responsive utilities */
-  .container-responsive {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  @media (min-width: 640px) {
-    .container-responsive {
-      max-width: 640px;
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .container-responsive {
-      max-width: 768px;
-    }
-  }
-  
-  @media (min-width: 1024px) {
-    .container-responsive {
-      max-width: 1024px;
-    }
-  }
-  
-  @media (min-width: 1280px) {
-    .container-responsive {
-      max-width: 1280px;
-    }
-  }
-  
-  /* Mobile-friendly text sizes */
-  .text-responsive-xs {
-    font-size: 0.75rem;
-  }
-  
-  .text-responsive-sm {
-    font-size: 0.875rem;
-  }
-  
-  .text-responsive-base {
-    font-size: 1rem;
-  }
-  
-  .text-responsive-lg {
-    font-size: 1.125rem;
-  }
-  
-  .text-responsive-xl {
-    font-size: 1.25rem;
-  }
-  
-  @media (min-width: 768px) {
-    .text-responsive-lg {
-      font-size: 1.25rem;
-    }
-    
-    .text-responsive-xl {
-      font-size: 1.5rem;
-    }
-  }
-  
-  /* Mobile-friendly spacing */
-  .spacing-mobile {
-    padding: 1rem;
-  }
-  
-  @media (min-width: 768px) {
-    .spacing-mobile {
-      padding: 1.5rem;
-    }
-  }
-  
-  @media (min-width: 1024px) {
-    .spacing-mobile {
-      padding: 2rem;
-    }
+  .shadow-lg {
+    box-shadow: 0 12px 28px -22px rgb(80 18 87 / 0.45);
   }
 }

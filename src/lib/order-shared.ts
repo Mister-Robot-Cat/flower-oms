@@ -1,5 +1,6 @@
 // Shared order constants and helpers. Safe to import from client components.
 import type { AppRole } from "@/types/next-auth";
+import type React from "react";
 
 export const ORDER_STATUSES = ["NEW", "IN_PROGRESS", "READY", "PICKUP", "OUT_FOR_DELIVERY", "COMPLETED"] as const;
 export type OrderStatusValue = (typeof ORDER_STATUSES)[number];
@@ -87,4 +88,19 @@ export function formatDateAz(value: string | Date, timeZone: string = "Asia/Baku
   return new Intl.DateTimeFormat("en-GB", { timeZone, day: "2-digit", month: "2-digit", year: "numeric" })
     .format(new Date(value))
     .replace(/\//g, ".");
+}
+
+/** Ribbon colour of an order tag (see .tag-card / .status-pill in globals.css). */
+export const STATUS_RIBBON: Record<OrderStatusValue, string> = {
+  NEW: "var(--color-st-new)",
+  IN_PROGRESS: "var(--color-st-progress)",
+  READY: "var(--color-st-ready)",
+  PICKUP: "var(--color-st-away)",
+  OUT_FOR_DELIVERY: "var(--color-st-away)",
+  COMPLETED: "var(--color-st-done)",
+};
+
+/** Inline style that sets the ribbon colour: <div className="tag-card" style={ribbonStyle(s)}>. */
+export function ribbonStyle(status: string): React.CSSProperties {
+  return { "--st": isOrderStatus(status) ? STATUS_RIBBON[status] : "var(--color-line-strong)" } as React.CSSProperties;
 }

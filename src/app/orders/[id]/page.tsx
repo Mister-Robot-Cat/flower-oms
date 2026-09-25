@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requirePageUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import PaymentPanel from "@/components/PaymentPanel";
-import { STATUS_LABELS, STATUS_TARGETS_BY_ROLE } from "@/lib/order-shared";
+import { STATUS_LABELS, STATUS_TARGETS_BY_ROLE, formatDayMonthAz, ribbonStyle } from "@/lib/order-shared";
 import EditOrderForm from "./ui/EditOrderForm";
 
 interface Props {
@@ -70,23 +70,34 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-cosmic-gradient py-8 px-3">
-      <div className="mx-auto max-w-5xl rounded-xl bg-space-surface p-4 sm:p-6 shadow-xl border border-space-border">
-        <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-space-text-secondary">
-          <span className="text-lg font-bold text-space-text-primary">Sifariş #{order.orderNumber}</span>
-          <span>Yaradan: {order.createdBy.displayName}</span>
-          <span>Florist: {order.assignedTo?.displayName ?? "—"}</span>
-          {order.preparedBy && <span>Hazırlayan: {order.preparedBy.displayName}</span>}
-          {order.customer && (
-            <Link href={`/customers/${order.customer.id}`} className="text-cosmic-purple hover:underline">
-              Müştəri kartı →
-            </Link>
-          )}
+    <div className="mx-auto max-w-5xl px-4 py-5 sm:py-8">
+      <div>
+        <div className="tag-card mb-6 !py-5 !pr-5" style={ribbonStyle(order.status)}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-display text-base font-bold text-plum">Sifariş #{order.orderNumber}</span>
+            <span className="status-pill">{STATUS_LABELS[order.status]}</span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-3">
+            <span className="font-display text-3xl font-bold text-plum-deep">{order.deliveryTime}</span>
+            <span className="text-ink-soft">{formatDayMonthAz(order.deliveryDate.toISOString())}</span>
+          </div>
+          <div className="mt-1 text-xl font-bold">
+            {order.customer ? (
+              <Link href={`/customers/${order.customer.id}`} className="hover:text-plum">{order.customerFullName}</Link>
+            ) : (
+              order.customerFullName
+            )}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-soft">
+            <span>Yaradan: <b className="text-ink">{order.createdBy.displayName}</b></span>
+            <span>Florist: <b className="text-ink">{order.assignedTo?.displayName ?? "yoxdur"}</b></span>
+            {order.preparedBy && <span>Hazırlayan: <b className="text-ink">{order.preparedBy.displayName}</b></span>}
+          </div>
         </div>
 
         {justCreated && (
-          <div role="status" className="mb-4 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            ✅ <b>Sifariş #{order.orderNumber} yaradıldı.</b> Beh (avans) varsa,{" "}
+          <div role="status" className="mb-4 rounded-lg border border-success/30 bg-success-bg px-4 py-3 text-sm text-success">
+            <b>Sifariş #{order.orderNumber} yaradıldı.</b> Beh (avans) varsa,{" "}
             <a href="#odenis" className="font-semibold underline">ödənişi indi qeyd edin</a>.
           </div>
         )}

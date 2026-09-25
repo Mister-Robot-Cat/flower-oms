@@ -90,34 +90,34 @@ export default async function SalesReport({
         <div className="grid sm:grid-cols-3 gap-4 mb-6">
           <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
             <div className="text-xs text-space-text-secondary">Sifariş sayı</div>
-            <div className="text-2xl font-semibold text-space-text-primary">{totalOrders}</div>
+            <div className="font-display text-2xl font-bold text-space-text-primary">{totalOrders}</div>
           </div>
           <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
             <div className="text-xs text-space-text-secondary">Mağazadan götürmə</div>
-            <div className="text-2xl font-semibold text-space-text-primary">{pickupCount}</div>
+            <div className="font-display text-2xl font-bold text-space-text-primary">{pickupCount}</div>
           </div>
           <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
             <div className="text-xs text-space-text-secondary">Çatdırılma</div>
-            <div className="text-2xl font-semibold text-space-text-primary">{deliveryCount}</div>
+            <div className="font-display text-2xl font-bold text-space-text-primary">{deliveryCount}</div>
           </div>
         </div>
 
         <div className="grid sm:grid-cols-4 gap-4 mb-6">
           <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
             <div className="text-xs text-space-text-secondary">Toplam məbləğ (AZN)</div>
-            <div className="text-2xl font-semibold text-space-text-primary">{totalAmount.toFixed(2)}</div>
+            <div className="font-display text-2xl font-bold text-space-text-primary">{totalAmount.toFixed(2)}</div>
           </div>
           <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
             <div className="text-xs text-space-text-secondary">Nağd alınıb</div>
-            <div className="text-2xl font-semibold text-emerald-700">{cashTotal.toFixed(2)}</div>
+            <div className="font-display text-2xl font-bold text-success">{cashTotal.toFixed(2)}</div>
           </div>
           <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
             <div className="text-xs text-space-text-secondary">Kartla alınıb</div>
-            <div className="text-2xl font-semibold text-blue-700">{cardTotal.toFixed(2)}</div>
+            <div className="font-display text-2xl font-bold text-plum">{cardTotal.toFixed(2)}</div>
           </div>
           <div className="rounded-md border border-space-border p-4 bg-space-surface-light">
             <div className="text-xs text-space-text-secondary">Ödənilməmiş / borc</div>
-            <div className="text-2xl font-semibold text-red-700">{dueTotal.toFixed(2)}</div>
+            <div className="font-display text-2xl font-bold text-error">{dueTotal.toFixed(2)}</div>
           </div>
         </div>
 

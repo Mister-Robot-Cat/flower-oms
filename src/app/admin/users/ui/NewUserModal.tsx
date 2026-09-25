@@ -108,7 +108,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-md bg-error-bg border border-error/30 px-4 py-3 text-sm text-error">
               {error}
             </div>
           )}
