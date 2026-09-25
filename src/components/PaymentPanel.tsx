@@ -25,9 +25,9 @@ type PaymentRow = {
 type Mode = null | "cash" | "card" | "mixed" | "debt";
 
 const STATE_STYLES: Record<PaymentState, string> = {
-  PAID: "bg-emerald-100 text-emerald-800 border-emerald-300",
+  PAID: "bg-emerald-100 text-success border-success/30",
   PARTIAL: "bg-amber-100 text-amber-800 border-amber-300",
-  UNPAID: "bg-red-100 text-red-800 border-red-300",
+  UNPAID: "bg-red-100 text-error border-error/30",
 };
 
 function parseMoney(value: string): number {
@@ -117,10 +117,10 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
   }
 
   if (loading && !summary) {
-    return <div className="py-6 text-center text-gray-500">Yüklənir...</div>;
+    return <div className="py-6 text-center text-ink-soft">Yüklənir...</div>;
   }
   if (!summary) {
-    return <div className="rounded-lg bg-red-50 border border-red-300 px-4 py-3 text-sm text-red-700">{error}</div>;
+    return <div className="rounded-lg bg-error-bg border border-error/30 px-4 py-3 text-sm text-error">{error}</div>;
   }
 
   const due = summary.due;
@@ -131,17 +131,17 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
-          <div className="text-xs text-gray-500">Məbləğ</div>
-          <div className="text-base sm:text-lg font-bold text-gray-900 whitespace-nowrap">{formatAzn(summary.total)}</div>
+        <div className="rounded-xl bg-fill p-3">
+          <div className="text-xs text-ink-soft">Məbləğ</div>
+          <div className="text-base sm:text-lg font-bold text-ink whitespace-nowrap">{formatAzn(summary.total)}</div>
         </div>
-        <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
-          <div className="text-xs text-gray-500">Ödənilib</div>
-          <div className="text-base sm:text-lg font-bold text-emerald-700 whitespace-nowrap">{formatAzn(summary.paid)}</div>
+        <div className="rounded-xl bg-fill p-3">
+          <div className="text-xs text-ink-soft">Ödənilib</div>
+          <div className="text-base sm:text-lg font-bold text-success whitespace-nowrap">{formatAzn(summary.paid)}</div>
         </div>
-        <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
-          <div className="text-xs text-gray-500">Qalıq</div>
-          <div className={`text-base sm:text-lg font-bold whitespace-nowrap ${due > 0 ? "text-red-700" : "text-gray-900"}`}>{formatAzn(due)}</div>
+        <div className="rounded-xl bg-fill p-3">
+          <div className="text-xs text-ink-soft">Qalıq</div>
+          <div className={`text-base sm:text-lg font-bold whitespace-nowrap ${due > 0 ? "text-error" : "text-ink"}`}>{formatAzn(due)}</div>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
           {PAYMENT_STATE_LABELS[summary.state]}
         </span>
         {(summary.cash > 0 || summary.card > 0) && (
-          <span className="text-gray-600">
+          <span className="text-ink-soft">
             Nağd {formatAzn(summary.cash)} · Kart {formatAzn(summary.card)}
           </span>
         )}
@@ -165,7 +165,7 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
               setMode("cash");
               setError(null);
             }}
-            className="w-full py-4 px-6 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold text-lg rounded-xl transition-colors"
+            className="w-full py-4 px-5 disabled:opacity-50 font-bold text-lg rounded-xl transition-colors bg-plum hover:bg-plum-deep text-white"
           >
             💵 Nağd ödəniş ({formatAzn(due)})
           </button>
@@ -176,7 +176,7 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
               setMode("card");
               setError(null);
             }}
-            className="w-full py-4 px-6 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-bold text-lg rounded-xl transition-colors"
+            className="w-full py-4 px-5 disabled:opacity-50 font-bold text-lg rounded-xl transition-colors bg-plum hover:bg-plum-deep text-white"
           >
             💳 Kart ilə ödəniş ({formatAzn(due)})
           </button>
@@ -187,7 +187,7 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
               setMode("mixed");
               setError(null);
             }}
-            className="w-full py-4 px-6 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white font-bold text-lg rounded-xl transition-colors"
+            className="w-full py-4 px-5 disabled:opacity-50 font-bold text-lg rounded-xl transition-colors bg-surface border-[1.5px] border-line text-plum-deep hover:border-orchid"
           >
             🔀 Qarışıq / qismən ödəniş
           </button>
@@ -198,7 +198,7 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
               setMode("debt");
               setError(null);
             }}
-            className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-lg rounded-xl transition-colors"
+            className="w-full py-4 px-5 disabled:opacity-50 font-bold text-lg rounded-xl transition-colors bg-surface border-[1.5px] border-line text-plum-deep hover:border-orchid"
           >
             📝 Borc
           </button>
@@ -209,12 +209,12 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
         // Second step, so an accidental tap never records money.
         <div
           className={`space-y-3 rounded-xl border-2 p-4 ${
-            mode === "cash" ? "border-green-300 bg-green-50" : "border-blue-300 bg-blue-50"
+            "border-orchid bg-fill"
           }`}
         >
           <div className="text-center">
-            <div className="text-sm text-gray-700">{mode === "cash" ? "💵 Nağd" : "💳 Kart"} ilə alındı?</div>
-            <div className="text-3xl font-bold text-gray-900">{formatAzn(due)}</div>
+            <div className="text-sm text-ink-soft">{mode === "cash" ? "💵 Nağd" : "💳 Kart"} ilə alındı?</div>
+            <div className="text-3xl font-bold text-ink">{formatAzn(due)}</div>
           </div>
           <div className="flex gap-2">
             <button
@@ -227,12 +227,12 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
                 )
               }
               className={`flex-1 py-4 px-4 disabled:opacity-50 text-white font-bold text-lg rounded-xl ${
-                mode === "cash" ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
+                "bg-plum hover:bg-plum-deep"
               }`}
             >
               {busy ? "Gözləyin..." : "Təsdiqlə"}
             </button>
-            <button type="button" disabled={busy} onClick={() => setMode(null)} className="py-4 px-5 bg-gray-200 hover:bg-gray-300 rounded-xl font-semibold">
+            <button type="button" disabled={busy} onClick={() => setMode(null)} className="py-4 px-5 bg-fill hover:bg-line rounded-xl font-semibold text-plum-deep">
               Geri
             </button>
           </div>
@@ -240,30 +240,30 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
       )}
 
       {mode === "mixed" && (
-        <div className="space-y-3 rounded-xl border-2 border-purple-200 bg-purple-50 p-4">
+        <div className="space-y-3 rounded-xl border-[1.5px] border-line bg-fill p-4">
           <div className="grid grid-cols-2 gap-3">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-ink-soft">
               Nağd (₼)
               <input
                 inputMode="decimal"
                 value={cash}
                 onChange={(e) => setCash(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-lg"
+                className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 text-lg"
                 placeholder="0.00"
               />
             </label>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-ink-soft">
               Kart (₼)
               <input
                 inputMode="decimal"
                 value={card}
                 onChange={(e) => setCard(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-lg"
+                className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 text-lg"
                 placeholder="0.00"
               />
             </label>
           </div>
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-ink-soft">
             Cəmi: <b>{formatAzn(mixedTotal)}</b> / qalıq {formatAzn(due)}
             {mixedTotal > 0 && mixedTotal < due && (
               <span className="text-amber-700"> — {formatAzn(due - mixedTotal)} borc qalacaq</span>
@@ -276,11 +276,11 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
               onClick={() =>
                 submit({ cash: mixedCash || 0, card: mixedCard || 0, note: note || undefined }, "Ödəniş qeydə alındı")
               }
-              className="flex-1 py-3 px-4 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold rounded-xl"
+              className="flex-1 py-3 px-4 bg-plum hover:bg-plum-deep disabled:opacity-50 text-white font-bold rounded-xl"
             >
               Təsdiqlə
             </button>
-            <button type="button" onClick={() => setMode(null)} className="py-3 px-4 bg-gray-200 hover:bg-gray-300 rounded-xl font-semibold">
+            <button type="button" onClick={() => setMode(null)} className="py-3 px-4 bg-fill hover:bg-line rounded-xl font-semibold text-plum-deep">
               Geri
             </button>
           </div>
@@ -288,8 +288,8 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
       )}
 
       {mode === "debt" && (
-        <div className="space-y-3 rounded-xl border-2 border-orange-200 bg-orange-50 p-4">
-          <div className="text-sm text-gray-800">
+        <div className="space-y-3 rounded-xl border-[1.5px] border-line bg-fill p-4">
+          <div className="text-sm text-ink">
             {formatAzn(due)} müştərinin borcu kimi qeyd olunacaq. Borc sonra ödənildikdə buradan nağd və ya kart ilə qeyd edin.
           </div>
           <input
@@ -297,38 +297,38 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
             onChange={(e) => setNote(e.target.value)}
             maxLength={191}
             placeholder="Qeyd (məs. nə vaxt ödəyəcək)"
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+            className="w-full rounded-lg border border-line bg-white px-3 py-2"
           />
           <div className="flex gap-2">
             <button
               type="button"
               disabled={busy}
               onClick={() => submit({ debt: true, note: note || undefined }, "Borc qeyd edildi")}
-              className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold rounded-xl"
+              className="flex-1 py-3 px-4 bg-plum hover:bg-plum-deep disabled:opacity-50 text-white font-bold rounded-xl"
             >
               Borcu qeyd et
             </button>
-            <button type="button" onClick={() => setMode(null)} className="py-3 px-4 bg-gray-200 hover:bg-gray-300 rounded-xl font-semibold">
+            <button type="button" onClick={() => setMode(null)} className="py-3 px-4 bg-fill hover:bg-line rounded-xl font-semibold text-plum-deep">
               Geri
             </button>
           </div>
         </div>
       )}
 
-      {error && <div className="rounded-lg bg-red-50 border border-red-300 px-4 py-3 text-sm text-red-700">❌ {error}</div>}
-      {message && <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">✅ {message}</div>}
+      {error && <div className="rounded-xl bg-error-bg px-4 py-3 text-sm font-semibold text-error">{error}</div>}
+      {message && <div className="rounded-xl bg-success-bg px-4 py-3 text-sm font-semibold text-success">{message}</div>}
 
       {payments.length > 0 && (
         <div>
-          <div className="text-sm font-semibold text-gray-700 mb-2">Ödəniş tarixçəsi</div>
-          <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white text-sm">
+          <div className="text-sm font-semibold text-ink-soft mb-2">Ödəniş tarixçəsi</div>
+          <ul className="divide-y divide-gray-200 rounded-lg border border-line bg-white text-sm">
             {payments.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-2 px-3 py-2">
                 <div>
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-ink">
                     {p.method === "CASH" ? "💵 Nağd" : "💳 Kart"} — {formatAzn(p.amount)}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-ink-soft">
                     {new Date(p.createdAt).toLocaleString("az-AZ")} · {p.createdBy}
                     {p.note ? ` · ${p.note}` : ""}
                   </div>
@@ -338,7 +338,7 @@ export default function PaymentPanel({ orderId, canCancel = false }: { orderId: 
                     type="button"
                     disabled={busy}
                     onClick={() => cancelPayment(p.id)}
-                    className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                    className="text-xs text-error hover:underline disabled:opacity-50"
                   >
                     Ləğv et
                   </button>

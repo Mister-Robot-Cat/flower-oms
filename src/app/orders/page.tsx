@@ -9,7 +9,7 @@ import SearchBar from "./ui/SearchBar";
 import OrderCard from "./ui/OrderCard";
 import { dayRange } from "@/lib/dates";
 import { phoneSearchFragment } from "@/lib/customers";
-import { isOrderStatus, paymentSummary, PAYMENT_STATE_LABELS, formatAzn } from "@/lib/orders";
+import { isOrderStatus, paymentSummary, PAYMENT_STATE_LABELS, formatAzn, ribbonStyle } from "@/lib/orders";
 import type { Prisma } from "../../../prisma-client/client";
 
 function formatStatus(status: string): string {
@@ -236,8 +236,9 @@ export default async function OrdersPage({
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order.id} className="border-b border-space-border last:border-b-0 hover:bg-space-surface-light/50 transition-colors">
-                  <td className="px-4 py-3 align-top text-sm text-space-text-secondary">
+                <tr key={order.id} style={ribbonStyle(order.status)} className="border-b border-space-border last:border-b-0 hover:bg-space-surface-light/50 transition-colors">
+                  {/* the status ribbon of the order tag, as a left edge */}
+                  <td className="px-4 py-3 align-top font-display text-sm font-bold text-plum shadow-[inset_4px_0_0_var(--st)]">
                     <Link
                       href={`/orders/${order.id}`}
                       className="underline-offset-2 hover:underline font-medium"
@@ -257,7 +258,7 @@ export default async function OrdersPage({
                   <td className="px-4 py-3 align-top text-base font-medium text-space-text-primary">
                     {order.assignedTo ? order.assignedTo.displayName : "-"}
                   </td>
-                  <td className={`px-4 py-3 align-top text-sm font-medium ${paymentInfo(order).paymentPaid ? "text-emerald-700" : "text-red-700"}`}>
+                  <td className={`px-4 py-3 align-top text-sm font-medium ${paymentInfo(order).paymentPaid ? "text-success" : "text-error"}`}>
                     {paymentInfo(order).paymentLabel}
                   </td>
                 </tr>

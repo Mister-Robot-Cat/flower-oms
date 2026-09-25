@@ -203,7 +203,7 @@ export default function EditOrderForm({ order, allowedStatuses }: EditOrderFormP
               Ünvan (yalnız çatdırılma üçün)
             </label>
             <textarea
-              className="w-full rounded-md bg-space-surface-light border border-space-border px-3 py-2 text-sm text-space-text-primary placeholder:text-space-text-muted focus:outline-none focus:ring-2 focus:ring-cosmic-purple-light/40 focus:border-cosmic-purple"
+              className="w-full rounded-xl border-[1.5px] border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus:outline-none focus:ring-4 focus:ring-orchid/15 focus:border-orchid"
               rows={3}
               value={deliveryAddress}
               onChange={(e) => setDeliveryAddress(e.target.value)}
@@ -213,7 +213,7 @@ export default function EditOrderForm({ order, allowedStatuses }: EditOrderFormP
           <div>
             <label className="block text-sm font-medium mb-1">Qeyd / xüsusi istəklər</label>
             <textarea
-              className="w-full rounded-md bg-space-surface-light border border-space-border px-3 py-2 text-sm text-space-text-primary placeholder:text-space-text-muted focus:outline-none focus:ring-2 focus:ring-cosmic-purple-light/40 focus:border-cosmic-purple"
+              className="w-full rounded-xl border-[1.5px] border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus:outline-none focus:ring-4 focus:ring-orchid/15 focus:border-orchid"
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

@@ -156,7 +156,7 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
               Qeydlər
             </label>
             <textarea
-              className="w-full rounded-lg bg-white border border-space-border px-3 py-2.5 text-sm text-space-text-primary placeholder:text-space-text-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all duration-200 shadow-sm"
+              className="w-full rounded-xl border-[1.5px] border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus:outline-none focus:ring-4 focus:ring-orchid/15 focus:border-orchid"
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -165,7 +165,7 @@ export default function NewCustomerModal({ isOpen, onClose }: NewCustomerModalPr
           </div>
 
           {error && (
-            <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <div className="mb-4 rounded-md bg-error-bg border border-error/30 px-4 py-3 text-sm text-error">
               {error}
             </div>
           )}

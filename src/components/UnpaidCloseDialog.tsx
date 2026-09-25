@@ -29,11 +29,11 @@ export default function UnpaidCloseDialog({
         className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 id="unpaid-close-title" className="text-lg font-bold text-gray-900">
+        <h3 id="unpaid-close-title" className="text-lg font-bold text-ink">
           Sifariş tam ödənilməyib
         </h3>
-        <p className="mt-1 text-sm text-gray-700">
-          Qalıq: <b className="text-red-700 text-base">{formatAzn(due)}</b>. Bağlamazdan əvvəl ödənişi qəbul edin və ya
+        <p className="mt-1 text-sm text-ink-soft">
+          Qalıq: <b className="text-error text-base">{formatAzn(due)}</b>. Bağlamazdan əvvəl ödənişi qəbul edin və ya
           qalığı müştərinin borcu kimi qeyd edin.
         </p>
         <div className="mt-4 grid gap-2">
@@ -57,7 +57,7 @@ export default function UnpaidCloseDialog({
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="w-full rounded-xl bg-gray-200 py-3 font-semibold text-gray-800 hover:bg-gray-300"
+            className="w-full rounded-xl bg-fill py-3 font-semibold text-ink hover:bg-line"
           >
             Ləğv et
           </button>

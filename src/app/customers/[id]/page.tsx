@@ -152,7 +152,7 @@ export default async function CustomerProfilePage({ params }: Props) {
                   </div>
                 </div>
                 <div className="rounded-lg bg-space-surface-light p-3">
-                  <div className={`text-2xl font-bold ${debt > 0 ? "text-red-600" : "text-space-text-primary"}`}>
+                  <div className={`text-2xl font-bold ${debt > 0 ? "text-error" : "text-space-text-primary"}`}>
                     {debt.toFixed(2)} ₼
                   </div>
                   <div className="text-xs text-space-text-secondary mt-1">
